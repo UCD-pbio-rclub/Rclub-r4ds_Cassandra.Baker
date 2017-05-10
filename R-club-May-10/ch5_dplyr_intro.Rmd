@@ -284,7 +284,7 @@ Logarithmic functions can also be used with `mutate()`. `lead()` refers to leadi
 
 #### 5.5.2 Exercises
 
-1. Convert dep_time and sched_dep_time to minutes since midnight. Need to 
+1. Convert dep_time and sched_dep_time to minutes since midnight. Need to parse hours and minutes?
 ```{r}
 
 ```
