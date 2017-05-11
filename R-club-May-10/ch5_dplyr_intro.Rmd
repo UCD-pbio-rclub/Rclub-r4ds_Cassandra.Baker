@@ -155,18 +155,19 @@ filter(flights, dep_delay > 60 & arr_delay < 30)
 
   7. Flights that departed between midnight and 6 am (including these times)
 ```{r}
-filter(flights, hour %in% c(12, 1, 2, 3, 4, 5, 6))
+filter(flights, hour %in% c(24, 1, 2, 3, 4, 5, 6))
 ```
 
 2. `between()` specifies a range of values for a variable and can be used to simplify challenge 4 and 7.
 ```{r}
 filter(flights, between(month, 7, 9))
-filter(flights, hour == 12 | between(hour, 1, 6))
+filter(flights, hour == 24 | between(hour, 1, 6))
 ```
 
-3. There are 8,255 flights with a missing `dep_time`. These rows may represent cancelled flights. **What other variables are missing?**
+3. There are 8,255 flights with a missing `dep_time`. These rows may represent cancelled flights. dep_time, dep_delay, arr_time, arr_delay, and air_time have missing values.
 ```{r}
 nrow(filter(flights, is.na(dep_time)))
+summary(flights)
 ```
 
 4. `NA ^ 0` is not missing because anything to the 0 power = 1. `NA | TRUE` is not missing because it is converted into a TRUE or FALSE value. `FALSE & NA` is not missing because it is also converted into a TRUE or FALSE value. If NA is converted into some other value through an equation, the result will not be missing.
@@ -186,6 +187,7 @@ arrange(df, desc(x))
 1. Sort missing values to the start with `arrange()`
 ```{r}
 arrange(df, desc(is.na(x)))
+arrange(df, desc(is.na(x)), x)
 ```
 
 2. Find flights that were most delayed and flights that left earliest
@@ -232,7 +234,10 @@ Additional functions can be used within `select()`
 ```{r}
 select(flights, dep_time, dep_delay, arr_time, arr_delay)
 select(flights, starts_with("arr"), starts_with("dep"))
+select(flights, dep_time:arr_delay, -starts_with("sched"))
 ```
+
+You can also use regular expressions to answer this or by excluding everything except the columns you want.
 
 2. `select()` ignores repeated variables and only includes them once in the output.
 
@@ -245,6 +250,7 @@ select(flights, one_of(vars))
 4. The following code was surprising because it included all variables with "time" regardless of upper and lower case. By default, the select helpers ignore case. The default can be changed by specifying `ignore.case = FALSE`.
 ```{r}
 select(flights, contains("TIME"))
+select(flights, contains("TIME", ignore.case = FALSE))
 ```
 
 ### 5.5 `mutate()`
@@ -261,7 +267,9 @@ flights_sml <- select(flights,
 
 mutate(flights_sml,
        gain = arr_delay - dep_delay,
-       speed = distance / air_time * 60)
+       speed = distance / air_time * 60,
+       hours = air_time / 60,
+       gain_per_hour = gain / hours)
 ```
 
 `transmute()` will only keep new variables. 
@@ -284,19 +292,25 @@ Logarithmic functions can also be used with `mutate()`. `lead()` refers to leadi
 
 #### 5.5.2 Exercises
 
-1. Convert dep_time and sched_dep_time to minutes since midnight. Need to parse hours and minutes?
+1. Convert dep_time and sched_dep_time to minutes since midnight.
 ```{r}
-
+mutate(flights,
+       dep_hour = dep_time %/% 100,
+       dep_min = dep_time %% 100,
+       dep_time_min = dep_hour * 60 + dep_min,
+       sched_dep_hour = sched_dep_time %/% 100,
+       sched_dep_min = sched_dep_time %% 100,
+       sched_dep_time_min = sched_dep_hour * 60 + sched_dep_min)
 ```
 
-2. I would expect air_time to match arr_time - dep_time, but this is not the case.
+2. I would expect air_time to match arr_time - dep_time, but this is not the case. You can change the times into minutes since midnight instead of hours and minutes. However, there is also a problem with accurately counting this since some flights could land the next day and that flight time would not be accurately counted with this method. Time zones could further play into this. Graphing can also be informative to identify some of these problems.
 ```{r}
 transmute(flights, 
           air_time,
           arr_dep = arr_time - dep_time)
 ```
 
-3. I would expect dep_delay to equal dep_time - sched_dep_time.
+3. I would expect dep_delay to equal dep_time - sched_dep_time. This should also be converted into minutes since midnight instead of hours and minutes. Flights that were delayed past midnight have additional problems here, as in the previous problem. You can use `ifelse` to catch flights that were delayed past midnight and then 
 ```{r}
 transmute(flights,
           dep_time,
@@ -307,8 +321,11 @@ transmute(flights,
 
 4. 
 ```{r}
-mutate(flights_sml, 
-       min_rank(desc(dep_delay)))
+head(mutate(flights_sml, 
+       min_rank(desc(dep_delay))), 10)
+
+flights %>% mutate(rank = min_rank(arr_delay)) %>% 
+  arrange(desc(rank)) %>% head(10)
 ```
 
 5. 1:3 is looped since it is longer than 1:10.

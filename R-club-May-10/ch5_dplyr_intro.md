@@ -474,11 +474,11 @@ filter(flights, dep_delay > 60 & arr_delay < 30)
   7. Flights that departed between midnight and 6 am (including these times)
 
 ```r
-filter(flights, hour %in% c(12, 1, 2, 3, 4, 5, 6))
+filter(flights, hour %in% c(24, 1, 2, 3, 4, 5, 6))
 ```
 
 ```
-## # A tibble: 46,086 × 19
+## # A tibble: 27,905 × 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time
 ##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
 ## 1   2013     1     1      517            515         2      830
@@ -491,7 +491,7 @@ filter(flights, hour %in% c(12, 1, 2, 3, 4, 5, 6))
 ## 8   2013     1     1      557            600        -3      709
 ## 9   2013     1     1      557            600        -3      838
 ## 10  2013     1     1      558            600        -2      753
-## # ... with 46,076 more rows, and 12 more variables: sched_arr_time <int>,
+## # ... with 27,895 more rows, and 12 more variables: sched_arr_time <int>,
 ## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
 ## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
 ## #   minute <dbl>, time_hour <dttm>
@@ -524,11 +524,11 @@ filter(flights, between(month, 7, 9))
 ```
 
 ```r
-filter(flights, hour == 12 | between(hour, 1, 6))
+filter(flights, hour == 24 | between(hour, 1, 6))
 ```
 
 ```
-## # A tibble: 46,086 × 19
+## # A tibble: 27,905 × 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time
 ##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
 ## 1   2013     1     1      517            515         2      830
@@ -541,13 +541,13 @@ filter(flights, hour == 12 | between(hour, 1, 6))
 ## 8   2013     1     1      557            600        -3      709
 ## 9   2013     1     1      557            600        -3      838
 ## 10  2013     1     1      558            600        -2      753
-## # ... with 46,076 more rows, and 12 more variables: sched_arr_time <int>,
+## # ... with 27,895 more rows, and 12 more variables: sched_arr_time <int>,
 ## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
 ## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
 ## #   minute <dbl>, time_hour <dttm>
 ```
 
-3. There are 8,255 flights with a missing `dep_time`. These rows may represent cancelled flights. **What other variables are missing?**
+3. There are 8,255 flights with a missing `dep_time`. These rows may represent cancelled flights. dep_time, dep_delay, arr_time, arr_delay, and air_time have missing values.
 
 ```r
 nrow(filter(flights, is.na(dep_time)))
@@ -555,6 +555,53 @@ nrow(filter(flights, is.na(dep_time)))
 
 ```
 ## [1] 8255
+```
+
+```r
+summary(flights)
+```
+
+```
+##       year          month             day           dep_time   
+##  Min.   :2013   Min.   : 1.000   Min.   : 1.00   Min.   :   1  
+##  1st Qu.:2013   1st Qu.: 4.000   1st Qu.: 8.00   1st Qu.: 907  
+##  Median :2013   Median : 7.000   Median :16.00   Median :1401  
+##  Mean   :2013   Mean   : 6.549   Mean   :15.71   Mean   :1349  
+##  3rd Qu.:2013   3rd Qu.:10.000   3rd Qu.:23.00   3rd Qu.:1744  
+##  Max.   :2013   Max.   :12.000   Max.   :31.00   Max.   :2400  
+##                                                  NA's   :8255  
+##  sched_dep_time   dep_delay          arr_time    sched_arr_time
+##  Min.   : 106   Min.   : -43.00   Min.   :   1   Min.   :   1  
+##  1st Qu.: 906   1st Qu.:  -5.00   1st Qu.:1104   1st Qu.:1124  
+##  Median :1359   Median :  -2.00   Median :1535   Median :1556  
+##  Mean   :1344   Mean   :  12.64   Mean   :1502   Mean   :1536  
+##  3rd Qu.:1729   3rd Qu.:  11.00   3rd Qu.:1940   3rd Qu.:1945  
+##  Max.   :2359   Max.   :1301.00   Max.   :2400   Max.   :2359  
+##                 NA's   :8255      NA's   :8713                 
+##    arr_delay          carrier              flight       tailnum         
+##  Min.   : -86.000   Length:336776      Min.   :   1   Length:336776     
+##  1st Qu.: -17.000   Class :character   1st Qu.: 553   Class :character  
+##  Median :  -5.000   Mode  :character   Median :1496   Mode  :character  
+##  Mean   :   6.895                      Mean   :1972                     
+##  3rd Qu.:  14.000                      3rd Qu.:3465                     
+##  Max.   :1272.000                      Max.   :8500                     
+##  NA's   :9430                                                           
+##     origin              dest              air_time        distance   
+##  Length:336776      Length:336776      Min.   : 20.0   Min.   :  17  
+##  Class :character   Class :character   1st Qu.: 82.0   1st Qu.: 502  
+##  Mode  :character   Mode  :character   Median :129.0   Median : 872  
+##                                        Mean   :150.7   Mean   :1040  
+##                                        3rd Qu.:192.0   3rd Qu.:1389  
+##                                        Max.   :695.0   Max.   :4983  
+##                                        NA's   :9430                  
+##       hour           minute        time_hour                  
+##  Min.   : 1.00   Min.   : 0.00   Min.   :2013-01-01 05:00:00  
+##  1st Qu.: 9.00   1st Qu.: 8.00   1st Qu.:2013-04-04 13:00:00  
+##  Median :13.00   Median :29.00   Median :2013-07-03 10:00:00  
+##  Mean   :13.18   Mean   :26.23   Mean   :2013-07-03 05:02:36  
+##  3rd Qu.:17.00   3rd Qu.:44.00   3rd Qu.:2013-10-01 07:00:00  
+##  Max.   :23.00   Max.   :59.00   Max.   :2013-12-31 23:00:00  
+## 
 ```
 
 4. `NA ^ 0` is not missing because anything to the 0 power = 1. `NA | TRUE` is not missing because it is converted into a TRUE or FALSE value. `FALSE & NA` is not missing because it is also converted into a TRUE or FALSE value. If NA is converted into some other value through an equation, the result will not be missing.
@@ -606,6 +653,19 @@ arrange(df, desc(is.na(x)))
 ## 1    NA
 ## 2     5
 ## 3     2
+```
+
+```r
+arrange(df, desc(is.na(x)), x)
+```
+
+```
+## # A tibble: 3 × 1
+##       x
+##   <dbl>
+## 1    NA
+## 2     2
+## 3     5
 ```
 
 2. Find flights that were most delayed and flights that left earliest
@@ -799,6 +859,29 @@ select(flights, starts_with("arr"), starts_with("dep"))
 ## # ... with 336,766 more rows
 ```
 
+```r
+select(flights, dep_time:arr_delay, -starts_with("sched"))
+```
+
+```
+## # A tibble: 336,776 × 4
+##    dep_time dep_delay arr_time arr_delay
+##       <int>     <dbl>    <int>     <dbl>
+## 1       517         2      830        11
+## 2       533         4      850        20
+## 3       542         2      923        33
+## 4       544        -1     1004       -18
+## 5       554        -6      812       -25
+## 6       554        -4      740        12
+## 7       555        -5      913        19
+## 8       557        -3      709       -14
+## 9       557        -3      838        -8
+## 10      558        -2      753         8
+## # ... with 336,766 more rows
+```
+
+You can also use regular expressions to answer this or by excluding everything except the columns you want.
+
 2. `select()` ignores repeated variables and only includes them once in the output.
 
 3. `one_of()` will select all variables specified in a vector. It would be helpful with the `vars` vector to select all columns invluded in that vector. 
@@ -848,6 +931,14 @@ select(flights, contains("TIME"))
 ## # ... with 336,766 more rows, and 1 more variables: time_hour <dttm>
 ```
 
+```r
+select(flights, contains("TIME", ignore.case = FALSE))
+```
+
+```
+## # A tibble: 336,776 × 0
+```
+
 ### 5.5 `mutate()`
 
 `mutate()` creates new variables using existing variables and adds them to the end of the dataset.
@@ -863,11 +954,13 @@ flights_sml <- select(flights,
 
 mutate(flights_sml,
        gain = arr_delay - dep_delay,
-       speed = distance / air_time * 60)
+       speed = distance / air_time * 60,
+       hours = air_time / 60,
+       gain_per_hour = gain / hours)
 ```
 
 ```
-## # A tibble: 336,776 × 9
+## # A tibble: 336,776 × 11
 ##     year month   day dep_delay arr_delay distance air_time  gain    speed
 ##    <int> <int> <int>     <dbl>     <dbl>    <dbl>    <dbl> <dbl>    <dbl>
 ## 1   2013     1     1         2        11     1400      227     9 370.0441
@@ -880,7 +973,8 @@ mutate(flights_sml,
 ## 8   2013     1     1        -3       -14      229       53   -11 259.2453
 ## 9   2013     1     1        -3        -8      944      140    -5 404.5714
 ## 10  2013     1     1        -2         8      733      138    10 318.6957
-## # ... with 336,766 more rows
+## # ... with 336,766 more rows, and 2 more variables: hours <dbl>,
+## #   gain_per_hour <dbl>
 ```
 
 `transmute()` will only keep new variables. 
@@ -921,10 +1015,41 @@ Logarithmic functions can also be used with `mutate()`. `lead()` refers to leadi
 
 #### 5.5.2 Exercises
 
-1. Convert dep_time and sched_dep_time to minutes since midnight. Need to 
+1. Convert dep_time and sched_dep_time to minutes since midnight.
 
+```r
+mutate(flights,
+       dep_hour = dep_time %/% 100,
+       dep_min = dep_time %% 100,
+       dep_time_min = dep_hour * 60 + dep_min,
+       sched_dep_hour = sched_dep_time %/% 100,
+       sched_dep_min = sched_dep_time %% 100,
+       sched_dep_time_min = sched_dep_hour * 60 + sched_dep_min)
+```
 
-2. I would expect air_time to match arr_time - dep_time, but this is not the case.
+```
+## # A tibble: 336,776 × 25
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
+## 1   2013     1     1      517            515         2      830
+## 2   2013     1     1      533            529         4      850
+## 3   2013     1     1      542            540         2      923
+## 4   2013     1     1      544            545        -1     1004
+## 5   2013     1     1      554            600        -6      812
+## 6   2013     1     1      554            558        -4      740
+## 7   2013     1     1      555            600        -5      913
+## 8   2013     1     1      557            600        -3      709
+## 9   2013     1     1      557            600        -3      838
+## 10  2013     1     1      558            600        -2      753
+## # ... with 336,766 more rows, and 18 more variables: sched_arr_time <int>,
+## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
+## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
+## #   minute <dbl>, time_hour <dttm>, dep_hour <dbl>, dep_min <dbl>,
+## #   dep_time_min <dbl>, sched_dep_hour <dbl>, sched_dep_min <dbl>,
+## #   sched_dep_time_min <dbl>
+```
+
+2. I would expect air_time to match arr_time - dep_time, but this is not the case. You can change the times into minutes since midnight instead of hours and minutes. However, there is also a problem with accurately counting this since some flights could land the next day and that flight time would not be accurately counted with this method. Time zones could further play into this. Graphing can also be informative to identify some of these problems.
 
 ```r
 transmute(flights, 
@@ -949,7 +1074,7 @@ transmute(flights,
 ## # ... with 336,766 more rows
 ```
 
-3. I would expect dep_delay to equal dep_time - sched_dep_time.
+3. I would expect dep_delay to equal dep_time - sched_dep_time. This should also be converted into minutes since midnight instead of hours and minutes. Flights that were delayed past midnight have additional problems here, as in the previous problem. You can use `ifelse` to catch flights that were delayed past midnight and then 
 
 ```r
 transmute(flights,
@@ -979,12 +1104,12 @@ transmute(flights,
 4. 
 
 ```r
-mutate(flights_sml, 
-       min_rank(desc(dep_delay)))
+head(mutate(flights_sml, 
+       min_rank(desc(dep_delay))), 10)
 ```
 
 ```
-## # A tibble: 336,776 × 8
+## # A tibble: 10 × 8
 ##     year month   day dep_delay arr_delay distance air_time
 ##    <int> <int> <int>     <dbl>     <dbl>    <dbl>    <dbl>
 ## 1   2013     1     1         2        11     1400      227
@@ -997,8 +1122,32 @@ mutate(flights_sml,
 ## 8   2013     1     1        -3       -14      229       53
 ## 9   2013     1     1        -3        -8      944      140
 ## 10  2013     1     1        -2         8      733      138
-## # ... with 336,766 more rows, and 1 more variables:
-## #   `min_rank(desc(dep_delay))` <int>
+## # ... with 1 more variables: `min_rank(desc(dep_delay))` <int>
+```
+
+```r
+flights %>% mutate(rank = min_rank(arr_delay)) %>% 
+  arrange(desc(rank)) %>% head(10)
+```
+
+```
+## # A tibble: 10 × 20
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
+## 1   2013     1     9      641            900      1301     1242
+## 2   2013     6    15     1432           1935      1137     1607
+## 3   2013     1    10     1121           1635      1126     1239
+## 4   2013     9    20     1139           1845      1014     1457
+## 5   2013     7    22      845           1600      1005     1044
+## 6   2013     4    10     1100           1900       960     1342
+## 7   2013     3    17     2321            810       911      135
+## 8   2013     7    22     2257            759       898      121
+## 9   2013    12     5      756           1700       896     1058
+## 10  2013     5     3     1133           2055       878     1250
+## # ... with 13 more variables: sched_arr_time <int>, arr_delay <dbl>,
+## #   carrier <chr>, flight <int>, tailnum <chr>, origin <chr>, dest <chr>,
+## #   air_time <dbl>, distance <dbl>, hour <dbl>, minute <dbl>,
+## #   time_hour <dttm>, rank <int>
 ```
 
 5. 1:3 is looped since it is longer than 1:10.
