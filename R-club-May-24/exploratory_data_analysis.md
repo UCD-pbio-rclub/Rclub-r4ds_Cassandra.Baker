@@ -346,3 +346,94 @@ ggplot(diamonds2) +
 
 ### 7.5 Covariation
 
+Covariation describes variation between related variables.
+
+#### 7.5.1 Categorical and continuous variable
+
+Density can be used instead of count to compare multiple groups easily. 
+
+```r
+ggplot(diamonds, aes(x = price)) + 
+  geom_freqpoly(aes(color = cut), binwidth = 500)
+
+ggplot(diamonds, aes(x = price, y = ..density..)) + 
+  geom_freqpoly(aes(color = cut), binwidth = 500)
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-20-1.png)![](exploratory_data_analysis_files/figure-html/unnamed-chunk-20-2.png)
+
+A boxplot is also useful for looking at a continuous and categorical variable simultaneously. 
+
+```r
+ggplot(diamonds, aes(x = cut, y = price)) + 
+  geom_boxplot()
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+
+`reorder()` can be used to rearrange categorical variables on a plot.
+
+```r
+ggplot(mpg, aes(x = class, y = hwy)) + 
+  geom_boxplot()
+
+ggplot(mpg) + 
+  geom_boxplot(aes(x = reorder(class, hwy, FUN = median), y = hwy))
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-22-1.png)![](exploratory_data_analysis_files/figure-html/unnamed-chunk-22-2.png)
+
+Flipping the coordinates will help display long names better.
+
+```r
+ggplot(mpg) + 
+  geom_boxplot(aes(x = reorder(class, hwy, FUN = median), y = hwy)) + 
+  coord_flip()
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+
+##### 7.5.1.1. Exercises
+
+1. Improve visualization of canceled vs non-canceled departure times
+
+```r
+flights %>% 
+  mutate(
+    canceled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60 
+  ) %>% 
+  ggplot(aes(sched_dep_time)) + 
+  geom_freqpoly(aes(color = canceled), binwidth = 1/4)
+
+flights %>% 
+  mutate(
+    canceled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60 
+  ) %>% 
+  ggplot(aes(x = sched_dep_time, y = ..density..)) + 
+  geom_freqpoly(aes(color = canceled), binwidth = 1/4)
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-24-1.png)![](exploratory_data_analysis_files/figure-html/unnamed-chunk-24-2.png)
+
+
+```r
+flights %>% 
+  mutate(
+    canceled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60 
+  ) %>% 
+  ggplot(aes(x = canceled, y = sched_dep_time)) + 
+  geom_boxplot(aes(color = canceled))
+```
+
+![](exploratory_data_analysis_files/figure-html/unnamed-chunk-25-1.png)<!-- -->
+
+2. 
