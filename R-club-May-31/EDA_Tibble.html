@@ -192,6 +192,131 @@ geom_freqpoly(binwidth = 0.25)</code></pre>
 <p>Be diligent with creating a separate R project for each analysis project. This will make sure all files and information you need for that project are stored together and easy to find. This will also help keep each analysis project separate from other analysis projects.</p>
 </div>
 </div>
+<div id="chapter-10-tibbles" class="section level2">
+<h2>Chapter 10 Tibbles</h2>
+<div id="introduction" class="section level3">
+<h3>10.1 Introduction</h3>
+<p>Tibbles are data frames, but are slightly different from base R data frames in ways that make them easier to work with.</p>
+<div id="prerequisites" class="section level4">
+<h4>10.1.1 Prerequisites</h4>
+<p>The <code>tibble</code> package is already included in <code>tidyverse</code>.</p>
+</div>
+</div>
+<div id="creating-tibbles" class="section level3">
+<h3>10.2 Creating tibbles</h3>
+<p>You can change a data frame into a tibble by using <code>as_tibble()</code>.</p>
+<pre class="r"><code>as_tibble(iris)</code></pre>
+<pre><code>## # A tibble: 150 × 5
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;       &lt;dbl&gt;  &lt;fctr&gt;
+## 1           5.1         3.5          1.4         0.2  setosa
+## 2           4.9         3.0          1.4         0.2  setosa
+## 3           4.7         3.2          1.3         0.2  setosa
+## 4           4.6         3.1          1.5         0.2  setosa
+## 5           5.0         3.6          1.4         0.2  setosa
+## 6           5.4         3.9          1.7         0.4  setosa
+## 7           4.6         3.4          1.4         0.3  setosa
+## 8           5.0         3.4          1.5         0.2  setosa
+## 9           4.4         2.9          1.4         0.2  setosa
+## 10          4.9         3.1          1.5         0.1  setosa
+## # ... with 140 more rows</code></pre>
+<p>Use <code>tibble()</code> to create a new tibble from vectors. Vectors of length 1 will be recycled automatically, but vectors of an intermediate length compared to the rest of the tibble will not be recycled and will produce an error.</p>
+<pre class="r"><code>tibble(
+  x = 1:5,
+  y = 1,
+  z = x ^ 2 + y
+)</code></pre>
+<pre><code>## # A tibble: 5 × 3
+##       x     y     z
+##   &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     1     1     2
+## 2     2     1     5
+## 3     3     1    10
+## 4     4     1    17
+## 5     5     1    26</code></pre>
+<p>Unlike <code>data.frame()</code>, <code>tibble()</code> will not change input types or variable names. <code>tibble()</code> will also not create row names.</p>
+<p>A tibble can have column names that are not valid in R, but they must be enclosed in backticks.</p>
+<pre class="r"><code>(tb &lt;- tibble(
+  `:)` = &quot;smile&quot;,
+  ` ` = &quot;space&quot;,
+  `2000` = &quot;number&quot;
+))</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##    `:)`   ` ` `2000`
+##   &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;
+## 1 smile space number</code></pre>
+<p><code>tribble()</code> will create transposed tibbles, which are easy to read as code.</p>
+<pre class="r"><code>tribble(
+  ~x, ~y, ~z,
+  #--/--/----
+  &quot;a&quot;, 2, 3.6,
+  &quot;b&quot;, 1, 8.5
+)</code></pre>
+<pre><code>## # A tibble: 2 × 3
+##       x     y     z
+##   &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1     a     2   3.6
+## 2     b     1   8.5</code></pre>
+<p>The comment line starting with <code>#</code> isn’t necessary, but makes it easy to tell where the header is.</p>
+</div>
+<div id="tibbles-vs.-data.frame" class="section level3">
+<h3>10.3 Tibbles vs. <code>data.frame</code></h3>
+<div id="printing" class="section level4">
+<h4>10.3.1 Printing</h4>
+<p>When a tibble is printed, only the first ten rows and the columns that fit on screen will be shown. Also, the type of each column variable will be shown below the column name. The default for printing tibbles is designed to prevent overloading the console when displaying large data frames, but there are options to override the defaults.</p>
+<p>Using <code>print()</code> will allow you to set the number of rows and columns that are shown. <code>width = Inf</code> will show all columns.</p>
+<pre class="r"><code>flights %&gt;% 
+  print(n = 1, width = Inf)</code></pre>
+<pre><code>## # A tibble: 336,776 × 19
+##    year month   day dep_time sched_dep_time dep_delay arr_time
+##   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1  2013     1     1      517            515         2      830
+##   sched_arr_time arr_delay carrier flight tailnum origin  dest air_time
+##            &lt;int&gt;     &lt;dbl&gt;   &lt;chr&gt;  &lt;int&gt;   &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt;    &lt;dbl&gt;
+## 1            819        11      UA   1545  N14228    EWR   IAH      227
+##   distance  hour minute           time_hour
+##      &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;              &lt;dttm&gt;
+## 1     1400     5     15 2013-01-01 05:00:00
+## # ... with 3.368e+05 more rows</code></pre>
+<p>The below option specifies only printing <code>n</code> rows if there are more than <code>m</code> rows.</p>
+<pre><code>options(tibble.print_max = n, tibble_print_min = m)</code></pre>
+<p>To always show all rows, use <code>options(dplyr.print_min = Inf)</code>. To always show all columns, use <code>options(tibble.width = Inf)</code>.</p>
+<p>RStudio also has the command <code>View()</code> to look at an entire dataset.</p>
+</div>
+<div id="subsetting" class="section level4">
+<h4>10.3.2 Subsetting</h4>
+<p>Use subsetting to pull out single variables from a data frame.</p>
+<pre class="r"><code>df &lt;- tibble(
+  x = runif(5),
+  y = rnorm(5)
+)
+
+df$x</code></pre>
+<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre class="r"><code>df[[&quot;x&quot;]]</code></pre>
+<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<p>Variables can also be specified by position instead of by name.</p>
+<pre class="r"><code>df[[1]]</code></pre>
+<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<p>To subset within a pipe chain, <code>.</code> must be used as a placeholder.</p>
+<pre class="r"><code>df %&gt;% .$x</code></pre>
+<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre class="r"><code>df %&gt;% .[[&quot;x&quot;]]</code></pre>
+<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<p>Tibbles will not partially match something and will warn you if you’re trying to access something that doesn’t exist.</p>
+</div>
+</div>
+<div id="interacting-with-older-code" class="section level3">
+<h3>10.4 Interacting with older code</h3>
+<p>If you need to use an older function that doesn’t work with tibbles, you can change the tibble to a data frame with <code>as.data.frame()</code>.</p>
+<pre class="r"><code>class(as.data.frame(tb))</code></pre>
+<pre><code>## [1] &quot;data.frame&quot;</code></pre>
+<p>Functions won’t always work with tibbles because of the differences with <code>[</code> between data frames and tibbles. When working with data frames, <code>[</code> sometimes returns a data frame and sometimes returns a vector. with tibbles, <code>[</code> always returns a tibble.</p>
+</div>
+<div id="exercises" class="section level3">
+<h3>10.5 Exercises</h3>
+</div>
+</div>
 
 
 

@@ -93,3 +93,206 @@ If you save figures from within R using code instead of the GUI, it will be much
 
 Be diligent with creating a separate R project for each analysis project. This will make sure all files and information you need for that project are stored together and easy to find. This will also help keep each analysis project separate from other analysis projects. 
 
+## Chapter 10 Tibbles
+
+### 10.1 Introduction
+
+Tibbles are data frames, but are slightly different from base R data frames in ways that make them easier to work with.
+
+#### 10.1.1 Prerequisites
+
+The `tibble` package is already included in `tidyverse`. 
+
+### 10.2 Creating tibbles
+
+You can change a data frame into a tibble by using `as_tibble()`. 
+
+```r
+as_tibble(iris)
+```
+
+```
+## # A tibble: 150 × 5
+##    Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+##           <dbl>       <dbl>        <dbl>       <dbl>  <fctr>
+## 1           5.1         3.5          1.4         0.2  setosa
+## 2           4.9         3.0          1.4         0.2  setosa
+## 3           4.7         3.2          1.3         0.2  setosa
+## 4           4.6         3.1          1.5         0.2  setosa
+## 5           5.0         3.6          1.4         0.2  setosa
+## 6           5.4         3.9          1.7         0.4  setosa
+## 7           4.6         3.4          1.4         0.3  setosa
+## 8           5.0         3.4          1.5         0.2  setosa
+## 9           4.4         2.9          1.4         0.2  setosa
+## 10          4.9         3.1          1.5         0.1  setosa
+## # ... with 140 more rows
+```
+
+Use `tibble()` to create a new tibble from vectors. Vectors of length 1 will be recycled automatically, but vectors of an intermediate length compared to the rest of the tibble will not be recycled and will produce an error. 
+
+```r
+tibble(
+  x = 1:5,
+  y = 1,
+  z = x ^ 2 + y
+)
+```
+
+```
+## # A tibble: 5 × 3
+##       x     y     z
+##   <int> <dbl> <dbl>
+## 1     1     1     2
+## 2     2     1     5
+## 3     3     1    10
+## 4     4     1    17
+## 5     5     1    26
+```
+
+Unlike `data.frame()`, `tibble()` will not change input types or variable names. `tibble()` will also not create row names.
+
+A tibble can have column names that are not valid in R, but they must be enclosed in backticks.
+
+```r
+(tb <- tibble(
+  `:)` = "smile",
+  ` ` = "space",
+  `2000` = "number"
+))
+```
+
+```
+## # A tibble: 1 × 3
+##    `:)`   ` ` `2000`
+##   <chr> <chr>  <chr>
+## 1 smile space number
+```
+
+`tribble()` will create transposed tibbles, which are easy to read as code.
+
+```r
+tribble(
+  ~x, ~y, ~z,
+  #--/--/----
+  "a", 2, 3.6,
+  "b", 1, 8.5
+)
+```
+
+```
+## # A tibble: 2 × 3
+##       x     y     z
+##   <chr> <dbl> <dbl>
+## 1     a     2   3.6
+## 2     b     1   8.5
+```
+
+The comment line starting with `#` isn't necessary, but makes it easy to tell where the header is.
+
+### 10.3 Tibbles vs. `data.frame`
+
+#### 10.3.1 Printing
+
+When a tibble is printed, only the first ten rows and the columns that fit on screen will be shown. Also, the type of each column variable will be shown below the column name. The default for printing tibbles is designed to prevent overloading the console when displaying large data frames, but there are options to override the defaults. 
+
+Using `print()` will allow you to set the number of rows and columns that are shown. `width = Inf` will show all columns.
+
+```r
+flights %>% 
+  print(n = 1, width = Inf)
+```
+
+```
+## # A tibble: 336,776 × 19
+##    year month   day dep_time sched_dep_time dep_delay arr_time
+##   <int> <int> <int>    <int>          <int>     <dbl>    <int>
+## 1  2013     1     1      517            515         2      830
+##   sched_arr_time arr_delay carrier flight tailnum origin  dest air_time
+##            <int>     <dbl>   <chr>  <int>   <chr>  <chr> <chr>    <dbl>
+## 1            819        11      UA   1545  N14228    EWR   IAH      227
+##   distance  hour minute           time_hour
+##      <dbl> <dbl>  <dbl>              <dttm>
+## 1     1400     5     15 2013-01-01 05:00:00
+## # ... with 3.368e+05 more rows
+```
+
+The below option specifies only printing `n` rows if there are more than `m` rows.
+```
+options(tibble.print_max = n, tibble_print_min = m)
+```
+
+To always show all rows, use `options(dplyr.print_min = Inf)`. To always show all columns, use `options(tibble.width = Inf)`. 
+
+RStudio also has the command `View()` to look at an entire dataset.
+
+#### 10.3.2 Subsetting
+
+Use subsetting to pull out single variables from a data frame.
+
+```r
+df <- tibble(
+  x = runif(5),
+  y = rnorm(5)
+)
+
+df$x
+```
+
+```
+## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057
+```
+
+```r
+df[["x"]]
+```
+
+```
+## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057
+```
+
+Variables can also be specified by position instead of by name.
+
+```r
+df[[1]]
+```
+
+```
+## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057
+```
+
+To subset within a pipe chain, `.` must be used as a placeholder.
+
+```r
+df %>% .$x
+```
+
+```
+## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057
+```
+
+```r
+df %>% .[["x"]]
+```
+
+```
+## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057
+```
+
+Tibbles will not partially match something and will warn you if you're trying to access something that doesn't exist.
+
+### 10.4 Interacting with older code
+
+If you need to use an older function that doesn't work with tibbles, you can change the tibble to a data frame with `as.data.frame()`. 
+
+```r
+class(as.data.frame(tb))
+```
+
+```
+## [1] "data.frame"
+```
+
+Functions won't always work with tibbles because of the differences with `[` between data frames and tibbles. When working with data frames, `[` sometimes returns a data frame and sometimes returns a vector. with tibbles, `[` always returns a tibble.
+
+### 10.5 Exercises
+
