@@ -296,3 +296,184 @@ Functions won't always work with tibbles because of the differences with `[` bet
 
 ### 10.5 Exercises
 
+1. When you print a tibble, it says "A tibble" and gives the dimensions before printing the tibble. When you print a data frame, it lacks this header. You can also check to see if something is a tibble or data frame with `class()`. 
+
+```r
+print(df, n = 1)
+```
+
+```
+## # A tibble: 5 × 2
+##           x        y
+##       <dbl>    <dbl>
+## 1 0.4660152 1.324679
+## # ... with 4 more rows
+```
+
+```r
+class(df)
+```
+
+```
+## [1] "tbl_df"     "tbl"        "data.frame"
+```
+
+```r
+class(mtcars)
+```
+
+```
+## [1] "data.frame"
+```
+
+2. The data frame will partially match variables, while the tibble will not. The default data frame behavior could be frustrating because it may accidentally select the wrong column with partial matching. When selecting a column with `[`, a vector will be created from the data frame and a tibble will be created from the tibble. Then when selecting multiple columns with `[`, a data frame will be created from the data frame and a tibble will be created from the tibble. There doesn't seem to be a huge difference here, but it would be nice to know that the output of subsetting with `[` is always a tibble. 
+
+```r
+df <- data.frame(abc = 1, xyz = "a")
+tib <- as_tibble(df)
+
+df$x
+```
+
+```
+## [1] a
+## Levels: a
+```
+
+```r
+df[, "xyz"]
+```
+
+```
+## [1] a
+## Levels: a
+```
+
+```r
+tib[, "xyz"]
+```
+
+```
+## # A tibble: 1 × 1
+##      xyz
+##   <fctr>
+## 1      a
+```
+
+```r
+df[, c("abc", "xyz")]
+```
+
+```
+##   abc xyz
+## 1   1   a
+```
+
+```r
+tib[, c("abc", "xyz")]
+```
+
+```
+## # A tibble: 1 × 2
+##     abc    xyz
+##   <dbl> <fctr>
+## 1     1      a
+```
+
+3. When the name of a variable is stored in an object, you can extract the reference variable from a tibble using `[[]]`. 
+
+```r
+var <- "mpg"
+cars <- as_tibble(mtcars)
+
+cars[[var]]
+```
+
+```
+##  [1] 21.0 21.0 22.8 21.4 18.7 18.1 14.3 24.4 22.8 19.2 17.8 16.4 17.3 15.2
+## [15] 10.4 10.4 14.7 32.4 30.4 33.9 21.5 15.5 15.2 13.3 19.2 27.3 26.0 30.4
+## [29] 15.8 19.7 15.0 21.4
+```
+
+4. Extract non-syntactic variable names
+
+```r
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+```
+
+* Extract `1`
+
+```r
+annoying$`1`
+```
+
+```
+##  [1]  1  2  3  4  5  6  7  8  9 10
+```
+
+* Plot scatterplot of `1` vs `2`
+
+```r
+ggplot(annoying, aes(x = `1`, y = `2`)) + 
+  geom_point()
+```
+
+![](EDA_Tibble_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+
+* Create `3` as `2` divided by `1`
+
+```r
+(annoying <- 
+  annoying %>% 
+  mutate(
+    `3` = `2` / `1`
+  ))
+```
+
+```
+## # A tibble: 10 × 3
+##      `1`       `2`      `3`
+##    <int>     <dbl>    <dbl>
+## 1      1  2.145658 2.145658
+## 2      2  3.692756 1.846378
+## 3      3  6.724963 2.241654
+## 4      4  7.052423 1.763106
+## 5      5 10.525359 2.105072
+## 6      6 11.221900 1.870317
+## 7      7 14.302413 2.043202
+## 8      8 16.751401 2.093925
+## 9      9 18.675664 2.075074
+## 10    10 19.217909 1.921791
+```
+
+* Rename columns to `one`, `two`, and `three`
+
+```r
+annoying %>% 
+  rename(one = `1`,
+         two = `2`,
+         three = `3`)
+```
+
+```
+## # A tibble: 10 × 3
+##      one       two    three
+##    <int>     <dbl>    <dbl>
+## 1      1  2.145658 2.145658
+## 2      2  3.692756 1.846378
+## 3      3  6.724963 2.241654
+## 4      4  7.052423 1.763106
+## 5      5 10.525359 2.105072
+## 6      6 11.221900 1.870317
+## 7      7 14.302413 2.043202
+## 8      8 16.751401 2.093925
+## 9      9 18.675664 2.075074
+## 10    10 19.217909 1.921791
+```
+
+5. `tibble::enframe()` creates a tibble from a vector. More specifically, it can create a tibble from a named vector so that the name and value assigned in the vector are arranged in a row together. This could be used to tidy up a named vector and make it easier to work with. 
+
+6. The `tibble.max_extra_cols` option controls how many additional column names are printed at the footer of a tibble. This can also be modified per tibble with `n_extra`. 

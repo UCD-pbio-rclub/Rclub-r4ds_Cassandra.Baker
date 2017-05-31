@@ -18,7 +18,7 @@ library(nycflights13)
 
 Patterns within data can be informative for determining relationships between variables. 
 
-```{r}
+```{r fig.height = 4, fig.width = 4}
 ggplot(faithful) + 
   geom_point(aes(x = eruptions, y = waiting))
 ```
@@ -27,7 +27,7 @@ Covariation can be used to reduce uncertainty because one variable can be used t
 
 Models can be used to separate variable effects and remove interfering relationships.
 
-```{r}
+```{r fig.height = 4, fig.width = 4}
 library(modelr)
 
 mod <- lm(log(price) ~ log(carat), diamonds)
@@ -41,7 +41,7 @@ ggplot(diamonds2) +
 ```
 
 Now see the expected relationship between cut and price without the effect of carat on price.
-```{r}
+```{r fig.height = 4, fig.width = 4}
 ggplot(diamonds2) + 
   geom_boxplot(aes(x = cut, y = resid))
 ```
@@ -202,3 +202,69 @@ Functions won't always work with tibbles because of the differences with `[` bet
 
 ### 10.5 Exercises
 
+1. When you print a tibble, it says "A tibble" and gives the dimensions before printing the tibble. When you print a data frame, it lacks this header. You can also check to see if something is a tibble or data frame with `class()`. 
+```{r}
+print(df, n = 1)
+class(df)
+class(mtcars)
+```
+
+2. The data frame will partially match variables, while the tibble will not. The default data frame behavior could be frustrating because it may accidentally select the wrong column with partial matching. When selecting a column with `[`, a vector will be created from the data frame and a tibble will be created from the tibble. Then when selecting multiple columns with `[`, a data frame will be created from the data frame and a tibble will be created from the tibble. There doesn't seem to be a huge difference here, but it would be nice to know that the output of subsetting with `[` is always a tibble. 
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+tib <- as_tibble(df)
+
+df$x
+df[, "xyz"]
+tib[, "xyz"]
+df[, c("abc", "xyz")]
+tib[, c("abc", "xyz")]
+```
+
+3. When the name of a variable is stored in an object, you can extract the reference variable from a tibble using `[[]]`. 
+```{r}
+var <- "mpg"
+cars <- as_tibble(mtcars)
+
+cars[[var]]
+```
+
+4. Extract non-syntactic variable names
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+```
+
+* Extract `1`
+```{r}
+annoying$`1`
+```
+
+* Plot scatterplot of `1` vs `2`
+```{r fig.height = 4, fig.width = 4}
+ggplot(annoying, aes(x = `1`, y = `2`)) + 
+  geom_point()
+```
+
+* Create `3` as `2` divided by `1`
+```{r}
+(annoying <- 
+  annoying %>% 
+  mutate(
+    `3` = `2` / `1`
+  ))
+```
+
+* Rename columns to `one`, `two`, and `three`
+```{r}
+annoying %>% 
+  rename(one = `1`,
+         two = `2`,
+         three = `3`)
+```
+
+5. `tibble::enframe()` creates a tibble from a vector. More specifically, it can create a tibble from a named vector so that the name and value assigned in the vector are arranged in a row together. This could be used to tidy up a named vector and make it easier to work with. 
+
+6. The `tibble.max_extra_cols` option controls how many additional column names are printed at the footer of a tibble. This can also be modified per tibble with `n_extra`. 
