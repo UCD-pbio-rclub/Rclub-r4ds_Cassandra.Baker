@@ -123,8 +123,8 @@ $(document).ready(function () {
 </div>
 
 
-<div id="chapter-7" class="section level2">
-<h2>Chapter 7</h2>
+<div id="chapter-7-exploratory-data-analysis" class="section level2">
+<h2>Chapter 7 Exploratory Data Analysis</h2>
 <div id="patterns-and-models" class="section level3">
 <h3>7.6 Patterns and models</h3>
 <p>Patterns within data can be informative for determining relationships between variables.</p>
@@ -162,6 +162,36 @@ geom_freqpoly(binwidth = 0.25)</code></pre>
 <p>Check out the ggplot2 book, <em>R Graphics Cookbook</em>, and <em>Graphical Data Analysis with R</em> for additional information.</p>
 </div>
 </div>
+<div id="chapter-8-workflow-projects" class="section level2">
+<h2>Chapter 8 Workflow: projects</h2>
+<p>R can be very useful for saving analyses and keeping multiple analyses separate.</p>
+<div id="what-is-real" class="section level3">
+<h3>8.1 What is real?</h3>
+<p>It’s important to remember that scripts are saved, but the environment in R is not. However, the environment can be recreated from saved scripts.</p>
+<p>You can check to make sure all important pieces of code are included in your script by restarting R and rerunning your script.</p>
+<ul>
+<li><code>Ctrl</code> + <code>Shift</code> + <code>F10</code> to restart RStudio</li>
+<li><code>Ctrl</code> + <code>Shift</code> + <code>S</code> to rerun current script</li>
+</ul>
+</div>
+<div id="where-does-your-analysis-live" class="section level3">
+<h3>8.2 Where does your analysis live?</h3>
+<p>It’s useful to organize each separate project into its own directory and set that directory as the working directory when working on that project.</p>
+</div>
+<div id="paths-and-directories" class="section level3">
+<h3>8.3 Paths and directories</h3>
+<p>Including an absolute path in a script makes it difficult to share the script with others, as that absolute file path will not work for them.</p>
+</div>
+<div id="rstudio-projects" class="section level3">
+<h3>8.4 RStudio projects</h3>
+<p>Projects within R are very useful for keeping all files associated with one project together in one place.</p>
+<p>If you save figures from within R using code instead of the GUI, it will be much easier to trace the origin of figure files in the future. Using an R markdown document instead of a script can also be useful for creating a workbook where the script and figures it creates are stored in one place.</p>
+</div>
+<div id="summary" class="section level3">
+<h3>8.5 Summary</h3>
+<p>Be diligent with creating a separate R project for each analysis project. This will make sure all files and information you need for that project are stored together and easy to find. This will also help keep each analysis project separate from other analysis projects.</p>
+</div>
+</div>
 
 
 
@@ -186,7 +216,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
