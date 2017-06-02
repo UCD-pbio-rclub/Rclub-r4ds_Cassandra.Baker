@@ -227,6 +227,15 @@ var <- "mpg"
 cars <- as_tibble(mtcars)
 
 cars[[var]]
+
+get(var, cars)
+select(cars, matches(var)) # can work with partial matches
+select(cars, one_of(var)) # does not work with partial matches
+subset(cars, select = var)
+cars[var]
+cars[, var]
+cars %>% .[var]
+cars %>% .[[var]]
 ```
 
 4. Extract non-syntactic variable names
@@ -240,6 +249,8 @@ annoying <- tibble(
 * Extract `1`
 ```{r}
 annoying$`1`
+annoying %>% select(`1`)
+annoying["1"]
 ```
 
 * Plot scatterplot of `1` vs `2`
@@ -263,8 +274,27 @@ annoying %>%
   rename(one = `1`,
          two = `2`,
          three = `3`)
+
+annoying %>% 
+  transmute(one = `1`,
+            two = `2`,
+            three = `3`)
 ```
 
 5. `tibble::enframe()` creates a tibble from a vector. More specifically, it can create a tibble from a named vector so that the name and value assigned in the vector are arranged in a row together. This could be used to tidy up a named vector and make it easier to work with. 
+```{r}
+vec <- c("a" = 5,
+         "b" = 2,
+         "c" = 3)
+enframe(vec)
+
+letters <- letters[1:7]
+enframe(letters)
+
+rainbow <- c("red", "orange", "yellow", "green", "blue", "indigo", "violet")
+names(rainbow) <- letters
+enframe(rainbow, "letters", "rainbow")
+```
+
 
 6. The `tibble.max_extra_cols` option controls how many additional column names are printed at the footer of a tibble. This can also be modified per tibble with `n_extra`. 

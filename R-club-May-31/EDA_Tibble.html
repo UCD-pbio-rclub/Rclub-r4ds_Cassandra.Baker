@@ -292,17 +292,17 @@ geom_freqpoly(binwidth = 0.25)</code></pre>
 )
 
 df$x</code></pre>
-<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre><code>## [1] 0.8269939 0.8498802 0.9451827 0.8804197 0.9952348</code></pre>
 <pre class="r"><code>df[[&quot;x&quot;]]</code></pre>
-<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre><code>## [1] 0.8269939 0.8498802 0.9451827 0.8804197 0.9952348</code></pre>
 <p>Variables can also be specified by position instead of by name.</p>
 <pre class="r"><code>df[[1]]</code></pre>
-<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre><code>## [1] 0.8269939 0.8498802 0.9451827 0.8804197 0.9952348</code></pre>
 <p>To subset within a pipe chain, <code>.</code> must be used as a placeholder.</p>
 <pre class="r"><code>df %&gt;% .$x</code></pre>
-<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre><code>## [1] 0.8269939 0.8498802 0.9451827 0.8804197 0.9952348</code></pre>
 <pre class="r"><code>df %&gt;% .[[&quot;x&quot;]]</code></pre>
-<pre><code>## [1] 0.4660152 0.1562708 0.7276627 0.3153478 0.7706057</code></pre>
+<pre><code>## [1] 0.8269939 0.8498802 0.9451827 0.8804197 0.9952348</code></pre>
 <p>Tibbles will not partially match something and will warn you if you’re trying to access something that doesn’t exist.</p>
 </div>
 </div>
@@ -320,9 +320,9 @@ df$x</code></pre>
 </ol>
 <pre class="r"><code>print(df, n = 1)</code></pre>
 <pre><code>## # A tibble: 5 × 2
-##           x        y
-##       &lt;dbl&gt;    &lt;dbl&gt;
-## 1 0.4660152 1.324679
+##           x         y
+##       &lt;dbl&gt;     &lt;dbl&gt;
+## 1 0.8269939 0.1372528
 ## # ... with 4 more rows</code></pre>
 <pre class="r"><code>class(df)</code></pre>
 <pre><code>## [1] &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</code></pre>
@@ -380,7 +380,7 @@ cars[[var]]</code></pre>
 </ul>
 <pre class="r"><code>ggplot(annoying, aes(x = `1`, y = `2`)) + 
   geom_point()</code></pre>
-<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
 <ul>
 <li>Create <code>3</code> as <code>2</code> divided by <code>1</code></li>
 </ul>
@@ -392,16 +392,16 @@ cars[[var]]</code></pre>
 <pre><code>## # A tibble: 10 × 3
 ##      `1`       `2`      `3`
 ##    &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1      1  2.145658 2.145658
-## 2      2  3.692756 1.846378
-## 3      3  6.724963 2.241654
-## 4      4  7.052423 1.763106
-## 5      5 10.525359 2.105072
-## 6      6 11.221900 1.870317
-## 7      7 14.302413 2.043202
-## 8      8 16.751401 2.093925
-## 9      9 18.675664 2.075074
-## 10    10 19.217909 1.921791</code></pre>
+## 1      1  2.124489 2.124489
+## 2      2  3.702589 1.851295
+## 3      3  7.142262 2.380754
+## 4      4  8.917676 2.229419
+## 5      5 11.581326 2.316265
+## 6      6 12.067892 2.011315
+## 7      7 15.009150 2.144164
+## 8      8 18.692767 2.336596
+## 9      9 18.212824 2.023647
+## 10    10 20.025014 2.002501</code></pre>
 <ul>
 <li>Rename columns to <code>one</code>, <code>two</code>, and <code>three</code></li>
 </ul>
@@ -412,16 +412,16 @@ cars[[var]]</code></pre>
 <pre><code>## # A tibble: 10 × 3
 ##      one       two    three
 ##    &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1      1  2.145658 2.145658
-## 2      2  3.692756 1.846378
-## 3      3  6.724963 2.241654
-## 4      4  7.052423 1.763106
-## 5      5 10.525359 2.105072
-## 6      6 11.221900 1.870317
-## 7      7 14.302413 2.043202
-## 8      8 16.751401 2.093925
-## 9      9 18.675664 2.075074
-## 10    10 19.217909 1.921791</code></pre>
+## 1      1  2.124489 2.124489
+## 2      2  3.702589 1.851295
+## 3      3  7.142262 2.380754
+## 4      4  8.917676 2.229419
+## 5      5 11.581326 2.316265
+## 6      6 12.067892 2.011315
+## 7      7 15.009150 2.144164
+## 8      8 18.692767 2.336596
+## 9      9 18.212824 2.023647
+## 10    10 20.025014 2.002501</code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li><p><code>tibble::enframe()</code> creates a tibble from a vector. More specifically, it can create a tibble from a named vector so that the name and value assigned in the vector are arranged in a row together. This could be used to tidy up a named vector and make it easier to work with.</p></li>
 <li><p>The <code>tibble.max_extra_cols</code> option controls how many additional column names are printed at the footer of a tibble. This can also be modified per tibble with <code>n_extra</code>.</p></li>
@@ -452,7 +452,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
