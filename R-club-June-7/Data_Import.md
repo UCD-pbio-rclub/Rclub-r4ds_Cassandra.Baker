@@ -127,6 +127,7 @@ read_delim("x, y \n 1,'a,b'", delim = ",", quote = "'")
 5. Identify code errors
 
 ```r
+# a
 read_csv("a, b \n 1, 2, 3 \n 4, 5, 6")
 ```
 
@@ -147,8 +148,22 @@ read_csv("a, b \n 1, 2, 3 \n 4, 5, 6")
 
 There are three columns of observations and only two column names. This produces a data frame with only two columns and doesn't include the third column of observations.
 
+```r
+# a modified
+read_csv("a, b, c \n 1, 2, 3 \n 4, 5, 6")
+```
+
+```
+## # A tibble: 2 × 3
+##       a     b     c
+##   <int> <int> <int>
+## 1     1     2     3
+## 2     4     5     6
+```
+
 
 ```r
+# b
 read_csv("a, b, c \n 1, 2 \n 1, 2, 3, 4")
 ```
 
@@ -169,8 +184,28 @@ read_csv("a, b, c \n 1, 2 \n 1, 2, 3, 4")
 
 Similar to above, the number of column names doesn't match the number of observations in each row. There are three column names, but only two observations in the first row and then four observations in the second row. The third observation in the row with only two specified observations is filled in with "NA". As above, the fourth observation in the row with four observations is not included in the data frame.
 
+```r
+# b modified
+read_csv("a, b, c, d \n 1, 2 \n 1, 2, 3, 4")
+```
+
+```
+## Warning: 1 parsing failure.
+## row col  expected    actual         file
+##   1  -- 4 columns 2 columns literal data
+```
+
+```
+## # A tibble: 2 × 4
+##       a     b     c     d
+##   <int> <int> <int> <int>
+## 1     1     2    NA    NA
+## 2     1     2     3     4
+```
+
 
 ```r
+# c
 read_csv("a, b \n\"1")
 ```
 
@@ -188,9 +223,10 @@ read_csv("a, b \n\"1")
 ## 1     1  <NA>
 ```
 
-It's unclear what the above is intented to achieve. If it's trying to have the 1 surrounded by quotes in the data frame, then the code is missing a space and an additional closing quote. 
+It's unclear what the above is intented to achieve. If it's trying to have the 1 surrounded by quotes in the data frame, then the code is missing a space and an additional closing quote. It's also possible that they were trying to set 1 as a character instead of a number.
 
 ```r
+# c modified
 read_csv("a, b \n \"1\"")
 ```
 
@@ -207,8 +243,26 @@ read_csv("a, b \n \"1\"")
 ## 1   "1"  <NA>
 ```
 
+```r
+read_csv("a, b \n 1", col_types = "cc")
+```
+
+```
+## Warning: 1 parsing failure.
+## row col  expected    actual         file
+##   1  -- 2 columns 1 columns literal data
+```
+
+```
+## # A tibble: 1 × 2
+##       a     b
+##   <chr> <chr>
+## 1     1  <NA>
+```
+
 
 ```r
+# d
 read_csv("a, b \n 1, 2 \n a, b")
 ```
 
@@ -223,6 +277,7 @@ read_csv("a, b \n 1, 2 \n a, b")
 Again, it's unclear what this is intended to look like. As far as I can tell, this doesn't have any obvious errors. Maybe they wanted "a,b" then "1,2" then "a,b" all in one column? `read_delim()` would need to be used to accomplish this.
 
 ```r
+# d modified
 read_delim("'a,b'\n'1,2'\n'a,b'", delim = ",", quote = "'")
 ```
 
@@ -235,8 +290,8 @@ read_delim("'a,b'\n'1,2'\n'a,b'", delim = ",", quote = "'")
 ```
 
 
-
 ```r
+# e
 read_csv("a;b \n 1;3")
 ```
 
@@ -250,6 +305,7 @@ read_csv("a;b \n 1;3")
 It seems like `;` was used as the delimiter instead of `,`.
 
 ```r
+# e modified
 read_csv("a, b \n 1, 3")
 ```
 
