@@ -305,6 +305,276 @@ read_csv(&quot;a, b \n 1, 3&quot;)</code></pre>
 </div>
 <div id="parsing-a-vector" class="section level3">
 <h3>11.3 Parsing a vector</h3>
+<p><code>parse_*()</code> functions convert character vectors into specialized vectors with a specific format (such as a date). The first argument specifies the vector to parse and the <code>na</code> argument specifies missing values.</p>
+<pre class="r"><code>parse_integer(c(&quot;1&quot;, &quot;231&quot;, &quot;.&quot;, &quot;456&quot;), na = &quot;.&quot;)</code></pre>
+<pre><code>## [1]   1 231  NA 456</code></pre>
+<p>A warning will pop up if parsing fails and the values that failed will appear as missing values in the output.</p>
+<pre class="r"><code>(x &lt;- parse_integer(c(&quot;123&quot;, &quot;345&quot;, &quot;abc&quot;, &quot;123.45&quot;)))</code></pre>
+<pre><code>## Warning: 2 parsing failures.
+## row col               expected actual
+##   3  -- an integer                abc
+##   4  -- no trailing characters    .45</code></pre>
+<pre><code>## [1] 123 345  NA  NA
+## attr(,&quot;problems&quot;)
+## # A tibble: 2 × 4
+##     row   col               expected actual
+##   &lt;int&gt; &lt;int&gt;                  &lt;chr&gt;  &lt;chr&gt;
+## 1     3    NA             an integer    abc
+## 2     4    NA no trailing characters    .45</code></pre>
+<p><code>problems()</code> will show all parsing failures.</p>
+<pre class="r"><code>problems(x)</code></pre>
+<pre><code>## # A tibble: 2 × 4
+##     row   col               expected actual
+##   &lt;int&gt; &lt;int&gt;                  &lt;chr&gt;  &lt;chr&gt;
+## 1     3    NA             an integer    abc
+## 2     4    NA no trailing characters    .45</code></pre>
+<p>There are a number of different <code>parse()</code> functions.</p>
+<ul>
+<li><code>parse_logical()</code>: parse logical vectors</li>
+<li><code>parse_integer()</code>: parse integer vectors</li>
+<li><code>parse_double()</code>: strictly parse numeric vectors</li>
+<li><code>parse_number()</code>: flexibly parse numeric vectors</li>
+<li><code>parse_character()</code>: parse character vectors (important for character encodings)</li>
+<li><code>parse_factor()</code>: parse factors (categorical variables)</li>
+<li><code>parse_datetime()</code>, <code>parse_date()</code>, and <code>parse_time()</code>: parse dates and times (these are tricky because the format can vary)</li>
+</ul>
+<div id="numbers" class="section level4">
+<h4>11.3.1 Numbers</h4>
+<p>Potential difficulties with parsing numbers:</p>
+<ul>
+<li>Different number formats (<code>.</code> or <code>,</code> as decimal marker)</li>
+<li>Context characters (10%)</li>
+<li>Grouping characters (1,000,000)</li>
+</ul>
+<p><code>locale</code> is used to specify different parsing options to adapt to various number formats. The default locale is based on US customs, like R.</p>
+<pre class="r"><code>parse_double(&quot;1.23&quot;)</code></pre>
+<pre><code>## [1] 1.23</code></pre>
+<pre class="r"><code>parse_double(&quot;1,23&quot;, locale = locale(decimal_mark = &quot;,&quot;))</code></pre>
+<pre><code>## [1] 1.23</code></pre>
+<p><code>parse_number()</code> will deal with context characters because it ignores non-numeric characters. This is useful for extracting numeric values without the context characters (like %), but is also good for extracting numeric values within other text.</p>
+<pre class="r"><code>parse_number(&quot;$100&quot;)</code></pre>
+<pre><code>## [1] 100</code></pre>
+<pre class="r"><code>parse_number(&quot;20%&quot;)</code></pre>
+<pre><code>## [1] 20</code></pre>
+<pre class="r"><code>parse_number(&quot;It cost $123.45&quot;)</code></pre>
+<pre><code>## [1] 123.45</code></pre>
+<p>Grouping characters are handled with <code>parse_number()</code> and <code>locale()</code> because <code>parse_number()</code> on its own will ignore these characters.</p>
+<pre class="r"><code>parse_number(&quot;$123,456,789&quot;)</code></pre>
+<pre><code>## [1] 123456789</code></pre>
+<pre class="r"><code>parse_number(&quot;123.456.789&quot;, locale = locale(grouping_mark = &quot;.&quot;))</code></pre>
+<pre><code>## [1] 123456789</code></pre>
+<pre class="r"><code>parse_number(&quot;123'456'789&quot;, locale = locale(grouping_mark = &quot;'&quot;))</code></pre>
+<pre><code>## [1] 123456789</code></pre>
+</div>
+<div id="strings" class="section level4">
+<h4>11.3.2 Strings</h4>
+<p>There are multiple ways to represent a character string, which makes <code>parse_character()</code> more difficult than it seems.</p>
+<pre class="r"><code>charToRaw(&quot;Hadley&quot;)</code></pre>
+<pre><code>## [1] 48 61 64 6c 65 79</code></pre>
+<p>Characters are encoded from hexadecimal numbers using specific systems. ASCII is useful for encoding English characters, but doesn’t work well with other languages. Instead, various standards have been used to encode non-english characters. For example, Latin1 was commonly used for Western European languages and Latin2 was commonly used for Eastern European languages. This could be difficult to work with because you need to know both the values and encoding system to interpret a string. Now, and in readr, UTF-8 is used as the universal standard for encoding characters. When working with older data or data not encoded by UTF-8, the strings will look weird because readr is trying to use UTF-8 by default.</p>
+<pre class="r"><code>x1 &lt;- &quot;El Ni\xf1o was particularly bad this year&quot;
+x2 &lt;- &quot;\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd&quot;
+
+parse_character(x1, locale = locale(encoding = &quot;Latin1&quot;))</code></pre>
+<pre><code>## [1] &quot;El Niño was particularly bad this year&quot;</code></pre>
+<pre class="r"><code>parse_character(x2, locale = locale(encoding = &quot;Shift-JIS&quot;))</code></pre>
+<pre><code>## [1] &quot;&lt;U+3053&gt;&lt;U+3093&gt;&lt;U+306B&gt;&lt;U+3061&gt;&lt;U+306F&gt;&quot;</code></pre>
+<p>Sometimes the encoding system will be specified in data documentation, but not always. To help determine which encoding system was used, you can use <code>guess_encoding()</code>. You may also need to try a few different encoding systems before finding the correct one.</p>
+<pre class="r"><code>guess_encoding(charToRaw(x1))</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##     encoding confidence
+##        &lt;chr&gt;      &lt;dbl&gt;
+## 1 ISO-8859-1       0.46
+## 2 ISO-8859-9       0.23</code></pre>
+<pre class="r"><code>guess_encoding(charToRaw(x2))</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   encoding confidence
+##      &lt;chr&gt;      &lt;dbl&gt;
+## 1   KOI8-R       0.42</code></pre>
+<p><code>guess_encoding()</code> can be used with either a file path or a vector.</p>
+</div>
+<div id="factors" class="section level4">
+<h4>11.3.3 Factors</h4>
+<p>Factors are used in R for categorical variables. When using <code>parse_factor()</code>, a warning will appear if a value other than the specified categories is present. However, if there are a lot of unexpected values it’s probably easier to leave the character vector and clean it up using other methods.</p>
+<pre class="r"><code>fruit &lt;- c(&quot;apple&quot;, &quot;banana&quot;)
+parse_factor(c(&quot;apple&quot;, &quot;banana&quot;, &quot;bananana&quot;), levels = fruit)</code></pre>
+<pre><code>## Warning: 1 parsing failure.
+## row col           expected   actual
+##   3  -- value in level set bananana</code></pre>
+<pre><code>## [1] apple  banana &lt;NA&gt;  
+## attr(,&quot;problems&quot;)
+## # A tibble: 1 × 4
+##     row   col           expected   actual
+##   &lt;int&gt; &lt;int&gt;              &lt;chr&gt;    &lt;chr&gt;
+## 1     3    NA value in level set bananana
+## Levels: apple banana</code></pre>
+</div>
+<div id="dates-date-times-and-times" class="section level4">
+<h4>11.3.4 Dates, date-times, and times</h4>
+<p><code>parse_datetime()</code> expects a date-time in the ISO8601 format, which is organized as year, month, day, hour, minute, second.</p>
+<pre class="r"><code>parse_datetime(&quot;2010-10-01T2010&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-10-01 20:10:00 UTC&quot;</code></pre>
+<pre class="r"><code>parse_datetime(&quot;20101010&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-10-10 UTC&quot;</code></pre>
+<p><code>parse_date()</code> expects a date formatted as year, month, day.</p>
+<pre class="r"><code>parse_date(&quot;2010-10-01&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-10-01&quot;</code></pre>
+<pre class="r"><code>parse_date(&quot;2010/10/01&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-10-01&quot;</code></pre>
+<p><code>parse_time()</code> expects a time formatted as hour, minutes, seconds and an optional am/pm specifier. The hms package provides a class for time data.</p>
+<pre class="r"><code>library(hms)
+parse_time(&quot;01:10 am&quot;)</code></pre>
+<pre><code>## 01:10:00</code></pre>
+<pre class="r"><code>parse_time(&quot;20:10:01&quot;)</code></pre>
+<pre><code>## 20:10:01</code></pre>
+<p>You can also create a date-time format with certain components.</p>
+<p><strong>Year</strong></p>
+<ul>
+<li><code>%Y</code>: 4 digits</li>
+<li><code>%y</code>: 2 digits (00-69 -&gt; 2000-2069, 70-99 -&gt; 1970-1999)</li>
+</ul>
+<p><strong>Month</strong></p>
+<ul>
+<li><code>%m</code>: 2 digits</li>
+<li><code>%b</code>: abbreviated month name (Jan)</li>
+<li><code>%B</code>: full month name (January)</li>
+</ul>
+<p><strong>Day</strong></p>
+<ul>
+<li><code>%d</code>: 2 digits</li>
+<li><code>%e</code>: optional leading space</li>
+</ul>
+<p><strong>Time</strong></p>
+<ul>
+<li><code>%H</code>: 0-23 hour time</li>
+<li><code>%I</code>: 0-12 hour time that requires an am/pm indication with <code>%p</code></li>
+<li><code>%p</code>: AM/PM indication</li>
+<li><code>%M</code>: minutes</li>
+<li><code>%S</code>: integer seconds</li>
+<li><code>%OS</code>: real seconds</li>
+<li><code>%Z</code>: time zone as a name (America/Chicago), but be careful with abbreviations</li>
+<li><code>%z</code>: time zone offset from UTC (+0800)</li>
+</ul>
+<p><strong>Non-digits</strong></p>
+<ul>
+<li><code>%.</code>: skips one non-digit character</li>
+<li><code>%*</code>: skips any non-digit characters</li>
+</ul>
+<p>Test potential formats with example vectors and the parsing functions.</p>
+<pre class="r"><code>parse_date(&quot;01/02/15&quot;, &quot;%m/%d/%y&quot;)</code></pre>
+<pre><code>## [1] &quot;2015-01-02&quot;</code></pre>
+<pre class="r"><code>parse_date(&quot;01/02/15&quot;, &quot;%d/%m/%y&quot;) </code></pre>
+<pre><code>## [1] &quot;2015-02-01&quot;</code></pre>
+<pre class="r"><code>parse_date(&quot;01/02/15&quot;, &quot;%y/%m/%d&quot;)</code></pre>
+<pre><code>## [1] &quot;2001-02-15&quot;</code></pre>
+<p><code>%b</code> and <code>%B</code> work with English month names by default, but the language parameters can be changed to recognize month names in other languages. <code>date_names_langs()</code> will show the list of built-in languages and you can create your own language with <code>date_names()</code>.</p>
+<pre class="r"><code>parse_date(&quot;1 janvier 2015&quot;, &quot;%d %B %Y&quot;, locale = locale(&quot;fr&quot;))</code></pre>
+<pre><code>## [1] &quot;2015-01-01&quot;</code></pre>
+</div>
+<div id="exercises-1" class="section level4">
+<h4>11.3.5 Exercises</h4>
+<ol style="list-style-type: decimal">
+<li><p>The most important arguments to <code>locale()</code> are whichever ones need to be changed from default to work with your data. Otherwise, I think they’re equally important. The arguments to <code>locale()</code> can be used to specify language, date and time format, decimal and grouping characters, time zone, encoding system, and conversion to ASCII.</p></li>
+<li><p><code>locale</code> will produce an error when <code>decimal_mark</code> and <code>grouping_mark</code> are set to the same character.</p>
+<pre><code>locale(decimal_mark = &quot;.&quot;, grouping_mark = &quot;.&quot;)
+# Error: `decimal_mark` and `grouping_mark` must be different</code></pre></li>
+</ol>
+<p>The default value of <code>grouping_mark</code> changes to <code>.</code> when you set <code>decimal_mark</code> to <code>,</code>.</p>
+<pre class="r"><code>locale(decimal_mark = &quot;,&quot;)</code></pre>
+<pre><code>## &lt;locale&gt;
+## Numbers:  123.456,78
+## Formats:  %AD / %AT
+## Timezone: UTC
+## Encoding: UTF-8
+## &lt;date_names&gt;
+## Days:   Sunday (Sun), Monday (Mon), Tuesday (Tue), Wednesday (Wed),
+##         Thursday (Thu), Friday (Fri), Saturday (Sat)
+## Months: January (Jan), February (Feb), March (Mar), April (Apr), May
+##         (May), June (Jun), July (Jul), August (Aug), September
+##         (Sep), October (Oct), November (Nov), December (Dec)
+## AM/PM:  AM/PM</code></pre>
+<p>The default value of <code>decimal_mark</code> changes to <code>,</code> when you set <code>grouping_mark</code> to <code>.</code>.</p>
+<pre class="r"><code>locale(grouping_mark = &quot;.&quot;)</code></pre>
+<pre><code>## &lt;locale&gt;
+## Numbers:  123.456,78
+## Formats:  %AD / %AT
+## Timezone: UTC
+## Encoding: UTF-8
+## &lt;date_names&gt;
+## Days:   Sunday (Sun), Monday (Mon), Tuesday (Tue), Wednesday (Wed),
+##         Thursday (Thu), Friday (Fri), Saturday (Sat)
+## Months: January (Jan), February (Feb), March (Mar), April (Apr), May
+##         (May), June (Jun), July (Jul), August (Aug), September
+##         (Sep), October (Oct), November (Nov), December (Dec)
+## AM/PM:  AM/PM</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>The <code>date_format</code> and <code>time_format</code> options specify the format of dates and times respectively. By default, <code>date_format = &quot;%AD&quot;</code> and <code>time_format = &quot;%AT&quot;</code>. These formatting options may be useful for adjusting the date and time to match conventions in different countries, or different dataframes. For example, if I’m parsing “06-07-2017” and “0210pm” the default date and time formats would need to be adjusted for proper parsing.</li>
+</ol>
+<pre class="r"><code># default
+parse_date(&quot;06-07-2017&quot;)</code></pre>
+<pre><code>## Warning: 1 parsing failure.
+## row col   expected     actual
+##   1  -- date like  06-07-2017</code></pre>
+<pre><code>## [1] NA</code></pre>
+<pre class="r"><code># modified
+parse_date(&quot;06-07-2017&quot;, locale = locale(date_format = &quot;%m-%d-%Y&quot;))</code></pre>
+<pre><code>## [1] &quot;2017-06-07&quot;</code></pre>
+<pre class="r"><code># default
+parse_time(&quot;0210pm&quot;)</code></pre>
+<pre><code>## Warning: 1 parsing failure.
+## row col   expected actual
+##   1  -- time like  0210pm</code></pre>
+<pre><code>## NA</code></pre>
+<pre class="r"><code># modified
+parse_time(&quot;0210pm&quot;, locale = locale(time_format = &quot;%I%M%p&quot;))</code></pre>
+<pre><code>## 14:10:00</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>If I were living in France, I may need a new locale similar to below.</li>
+</ol>
+<pre class="r"><code>(new_locale &lt;- locale(date_names = &quot;fr&quot;, date_format = &quot;%d/%m/%Y&quot;, time_format = &quot;%H%M&quot;, decimal_mark = &quot;,&quot;))</code></pre>
+<pre><code>## &lt;locale&gt;
+## Numbers:  123.456,78
+## Formats:  %d/%m/%Y / %H%M
+## Timezone: UTC
+## Encoding: UTF-8
+## &lt;date_names&gt;
+## Days:   dimanche (dim.), lundi (lun.), mardi (mar.), mercredi (mer.),
+##         jeudi (jeu.), vendredi (ven.), samedi (sam.)
+## Months: janvier (janv.), février (févr.), mars (mars), avril (avr.), mai
+##         (mai), juin (juin), juillet (juil.), août (août),
+##         septembre (sept.), octobre (oct.), novembre (nov.),
+##         décembre (déc.)
+## AM/PM:  AM/PM</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li><p><code>read_csv()</code> uses <code>,</code> as the delimiter and <code>read_csv2()</code> uses <code>;</code> as the delimiter.</p></li>
+<li><p>UTF-8 is universally commonly used, but other encoding systems vary by region. ISO 8859 variants and Windows variants are common in a number of regions. In Western Europe, ISO 8859-1 and Windows-1250 are both commonly used, while ISO 8859-2 and Windows-1252 are common in Eastern Europe. Greek languages use ISO 8859-7; Turkish languages use ISO 8859-9 and Windows-1254; Hebrew uses ISO 8859-8, IBM424, and Windows-1255; and Russian uses Windows-1251. Mac OS Roman is also common in Europe.</p></li>
+</ol>
+<p>ISO 8859-6 and Windows-1256 are common for Arabic, Windows-1258 is common for Vietnamese, and ISO 8859-11 is common for Thai. JIS X 0208, including Shift JIS, EUC-JP, and ISO 2022-JP, is common for Japanese. Guobiao, including GB 2312, GBK, and GB 18030, is common for Chinese. Big5 and HKSCS are used in Taiwan. KS X 1001, EUC-KR, and ISO 2022-KR are commonly used encoding systems in Korea.</p>
+<ol start="7" style="list-style-type: decimal">
+<li>Parse the following:</li>
+</ol>
+<pre class="r"><code>d1 &lt;- &quot;January 1, 2010&quot;
+parse_date(d1, &quot;%B %d, %Y&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-01-01&quot;</code></pre>
+<pre class="r"><code>d2 &lt;- &quot;2015-Mar-07&quot;
+parse_date(d2, &quot;%Y-%b-%d&quot;)</code></pre>
+<pre><code>## [1] &quot;2015-03-07&quot;</code></pre>
+<pre class="r"><code>d3 &lt;- &quot;06-Jun-2017&quot;
+parse_date(d3, &quot;%d-%b-%Y&quot;)</code></pre>
+<pre><code>## [1] &quot;2017-06-06&quot;</code></pre>
+<pre class="r"><code>d4 &lt;- c(&quot;August 19 (2015)&quot;, &quot;July 1 (2015)&quot;)
+parse_date(d4, &quot;%B %d (%Y)&quot;)</code></pre>
+<pre><code>## [1] &quot;2015-08-19&quot; &quot;2015-07-01&quot;</code></pre>
+<pre class="r"><code>d5 &lt;- &quot;12/30/14&quot;
+parse_date(d5, &quot;%m/%d/%y&quot;)</code></pre>
+<pre><code>## [1] &quot;2014-12-30&quot;</code></pre>
+<pre class="r"><code>t1 &lt;- &quot;1705&quot;
+parse_time(t1, &quot;%H%M&quot;)</code></pre>
+<pre><code>## 17:05:00</code></pre>
+<pre class="r"><code>t2 &lt;- &quot;11:15:10.12 PM&quot;
+parse_datetime(t2, &quot;%m:%d:%y.%I %p&quot;)</code></pre>
+<pre><code>## [1] &quot;2010-11-15 12:00:00 UTC&quot;</code></pre>
+</div>
 </div>
 </div>
 
