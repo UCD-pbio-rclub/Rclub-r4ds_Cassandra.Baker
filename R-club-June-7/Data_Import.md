@@ -111,7 +111,7 @@ Using `read_csv()` has some benefits compared to the base version, `read.csv()`.
 "x, y \n 1,`a,b`"
 ```
 
-The `quote` argument would need to be specified to read this into a data frame. Since you have to use `read_delim()` for this, you also need to specify `delim`. 
+The `quote` argument would need to be specified to read this into a data frame. `read_csv()` or `read_delim()` can be used for this.
 
 ```r
 read_delim("x, y \n 1,'a,b'", delim = ",", quote = "'")
@@ -121,6 +121,17 @@ read_delim("x, y \n 1,'a,b'", delim = ",", quote = "'")
 ## # A tibble: 1 × 2
 ##       x ` y `
 ##   <chr> <chr>
+## 1     1   a,b
+```
+
+```r
+read_csv("x,y\n1,'a,b'", quote = "'")
+```
+
+```
+## # A tibble: 1 × 2
+##       x     y
+##   <int> <chr>
 ## 1     1   a,b
 ```
 
@@ -274,7 +285,7 @@ read_csv("a, b \n 1, 2 \n a, b")
 ## 2     a     b
 ```
 
-Again, it's unclear what this is intended to look like. As far as I can tell, this doesn't have any obvious errors. Maybe they wanted "a,b" then "1,2" then "a,b" all in one column? `read_delim()` would need to be used to accomplish this.
+Again, it's unclear what this is intended to look like. As far as I can tell, this doesn't have any obvious errors. Maybe they wanted "a,b" then "1,2" then "a,b" all in one column? `read_delim()` would need to be used to accomplish this. Or maybe everything is being read as a character because integers and characters are mixed together in the columns.
 
 ```r
 # d modified
@@ -307,6 +318,21 @@ It seems like `;` was used as the delimiter instead of `,`.
 ```r
 # e modified
 read_csv("a, b \n 1, 3")
+```
+
+```
+## # A tibble: 1 × 2
+##       a     b
+##   <int> <int>
+## 1     1     3
+```
+
+```r
+read_csv2("a;b \n 1;3")
+```
+
+```
+## Using ',' as decimal and '.' as grouping mark. Use read_delim() for more control.
 ```
 
 ```
@@ -770,14 +796,14 @@ parse_time("0210pm", locale = locale(time_format = "%I%M%p"))
 4. If I were living in France, I may need a new locale similar to below.
 
 ```r
-(new_locale <- locale(date_names = "fr", date_format = "%d/%m/%Y", time_format = "%H%M", decimal_mark = ","))
+(new_locale <- locale(date_names = "fr", date_format = "%d/%m/%Y", time_format = "%H%M", decimal_mark = ",", tz = "Europe/Paris"))
 ```
 
 ```
 ## <locale>
 ## Numbers:  123.456,78
 ## Formats:  %d/%m/%Y / %H%M
-## Timezone: UTC
+## Timezone: Europe/Paris
 ## Encoding: UTF-8
 ## <date_names>
 ## Days:   dimanche (dim.), lundi (lun.), mardi (mar.), mercredi (mer.),
@@ -853,10 +879,224 @@ parse_time(t1, "%H%M")
 
 ```r
 t2 <- "11:15:10.12 PM"
-parse_datetime(t2, "%m:%d:%y.%I %p")
+parse_time(t2, "%I:%M:%OS %p")
 ```
 
 ```
-## [1] "2010-11-15 12:00:00 UTC"
+## 23:15:10.12
 ```
 
+### 11.4 Parsing a file
+
+`readr` will automatically parse an input file and will guess the type of each column. However, the defaults can be overridden to specify column type.
+
+#### 11.4.1 Strategy
+
+`readr` looks at the first 1000 rows to guess each column type. The guessing process can be emulated with `guess_parser()` to guess parsing and `parse_guess()` to parse the column with that guess.
+
+```r
+guess_parser("2010-10-01")
+```
+
+```
+## [1] "date"
+```
+
+```r
+str(parse_guess("2010-10-01"))
+```
+
+```
+##  Date[1:1], format: "2010-10-01"
+```
+
+When guessing, `readr` will try specific types and stop when a match is found. If there is no match, the column is kept as strings.
+
+* logical: true or false
+* integer: numeric characters (and `-`)
+* double: doubles (`4.5e-5`)
+* number: doubles with grouping mark inside
+* time: matching default `time_format`
+* date: matching default `date_format`
+* date-time: ISO8601 dates
+
+#### 11.4.2 Problems
+
+1. When working with larger files, `readr` may not be able to guess an accurate general type from the first 1000 rows. 
+
+2. If there are many `NA` values in a column, `readr` will guess that it's a character vector. However, this may not be the most accurate parsing method.
+
+An example CSV within `readr` demonstrates these problems.
+
+```r
+challenge <- read_csv(readr_example("challenge.csv"))
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_integer(),
+##   y = col_character()
+## )
+```
+
+```
+## Warning: 1000 parsing failures.
+##  row col               expected             actual                                                             file
+## 1001   x no trailing characters .23837975086644292 'C:/Program Files/R/R-3.4.0/library/readr/extdata/challenge.csv'
+## 1002   x no trailing characters .41167997173033655 'C:/Program Files/R/R-3.4.0/library/readr/extdata/challenge.csv'
+## 1003   x no trailing characters .7460716762579978  'C:/Program Files/R/R-3.4.0/library/readr/extdata/challenge.csv'
+## 1004   x no trailing characters .723450553836301   'C:/Program Files/R/R-3.4.0/library/readr/extdata/challenge.csv'
+## 1005   x no trailing characters .614524137461558   'C:/Program Files/R/R-3.4.0/library/readr/extdata/challenge.csv'
+## .... ... ...................... .................. ................................................................
+## See problems(...) for more details.
+```
+
+```r
+problems (challenge)
+```
+
+```
+## # A tibble: 1,000 × 5
+##      row   col               expected             actual
+##    <int> <chr>                  <chr>              <chr>
+## 1   1001     x no trailing characters .23837975086644292
+## 2   1002     x no trailing characters .41167997173033655
+## 3   1003     x no trailing characters  .7460716762579978
+## 4   1004     x no trailing characters   .723450553836301
+## 5   1005     x no trailing characters   .614524137461558
+## 6   1006     x no trailing characters   .473980569280684
+## 7   1007     x no trailing characters  .5784610391128808
+## 8   1008     x no trailing characters  .2415937229525298
+## 9   1009     x no trailing characters .11437866208143532
+## 10  1010     x no trailing characters  .2983446326106787
+## # ... with 990 more rows, and 1 more variables: file <chr>
+```
+
+When dealing with parsing problems, it's easiest to go column by column until all problems are resolved. To fix a column type, insert the column specification into the import command and then modify its type.
+
+
+```r
+challenge <- read_csv(
+  readr_example("challenge.csv"),
+  col_types = cols(
+    x = col_double(),
+    y = col_character()
+  )
+)
+```
+
+The next problem with this dataset is that dates are in a character vector.
+
+```r
+tail(challenge)
+```
+
+```
+## # A tibble: 6 × 2
+##           x          y
+##       <dbl>      <chr>
+## 1 0.8052743 2019-11-21
+## 2 0.1635163 2018-03-29
+## 3 0.4719390 2014-08-04
+## 4 0.7183186 2015-08-16
+## 5 0.2698786 2020-02-04
+## 6 0.6082372 2019-01-06
+```
+
+```r
+challenge <- read_csv(
+  readr_example("challenge.csv"),
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+```
+
+`parse_*()` functions have corresponding `col_*()` functions. The `parse` version is used to parse data from a character vector within R. The `col` version is used to instruct `readr` how to import data.
+
+Specifying `col_types` within a code is useful for reproducibility. This ensures that data will be imported consistently and problems will show up if the data changes. Using `stop_for_problems()` is even more strict and will stop the script if any parsing problems occur.
+
+#### 11.4.3 Other strategies
+
+You can change the number of rows `readr` looks at to guess column type.
+
+```r
+challenge2 <- read_csv(readr_example("challenge.csv"), guess_max = 1001)
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_double(),
+##   y = col_date(format = "")
+## )
+```
+
+You can read all columns in as character vectors and then sort out column types later. This can be used with `type_convert()` to parse character columns in a data frame.
+
+```r
+challenge2 <- read_csv(readr_example("challenge.csv"),
+                       col_types = cols(.default = col_character()))
+
+(df <- tribble(
+  ~x, ~y,
+  "1", "1.21",
+  "2", "2.32",
+  "3", "4.56"
+))
+```
+
+```
+## # A tibble: 3 × 2
+##       x     y
+##   <chr> <chr>
+## 1     1  1.21
+## 2     2  2.32
+## 3     3  4.56
+```
+
+```r
+type_convert(df)
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   x = col_integer(),
+##   y = col_double()
+## )
+```
+
+```
+## # A tibble: 3 × 2
+##       x     y
+##   <int> <dbl>
+## 1     1  1.21
+## 2     2  2.32
+## 3     3  4.56
+```
+
+When reading a very large file, you can set `n_max` to a smaller number (like 10,000 or 100,000) to increase speed and remove common problems.
+
+When dealing with major parsing problems, you can either use `read_lines()` to read into a character vector of lines or `read_file()` to read into a character vector of length 1. Parsing can be accomplished later with string parsing, which is more flexible.
+
+### 11.5 Writing to a file
+
+`write_csv()` and `write_tsv()` will save data to a file. These functions will encode with UTF-8 and will save dates and date-times in ISO8601 to make them easier to work with later on.
+
+A csv file can specifically be exported to Excel with `write_excel_csv()`, which specifies that UTF-8 encoding was used.
+
+**Arguments**
+
+* `x`: data frame to save
+* `path`: location to save the data frame
+* `na`: format to write missing values
+* `append`: an existing file to append the data frame to
+
+Column types are lost when data frames are written to csv, which makes csv files an unreliable intermediate. Instead, you can use `write_rds()` and `read_rds()` to store data in RDS binary. Alternatively, there is a `feather` package that also stores data in binary, but is faster than RDS and can be used outside of R. However, RDS can handle list-columns while `feather` can't. 
+
+### 11.6 Other types of data
+
+There are additional packages to work with other types of data. `haven` can read SPSS, Stata, and SAS files. `readxl` can read .xls and .xlsx files. `DBI` with `RMySQL`, `RSQLite`, or `RPostgreSQL` can query SQL files by a database and create a data frame. `jsonlite` can read json. `xml2` can read XML. `rio` can work with additional file types. 
