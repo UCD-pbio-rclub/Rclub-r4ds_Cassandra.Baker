@@ -261,7 +261,7 @@ who %>%
 
 #### 12.6.1 Exercises
 
-1. Removing missing values from this dataset seems reasonable. Missing values are shown as "NA" and there don't appear to be any implicit missing values. NA indicates that the value is missing while 0 indicates that there were no cases within that category.
+1. Removing missing values from this dataset seems reasonable. Missing values are shown as "NA". There may be some implicit missing values for small countries though. NA indicates that the value is missing while 0 indicates that there were no cases within that category.
 
 2. If you neglect the `mutate()` setp, all of the gathered columns are just removed from the data frame.
 
@@ -376,6 +376,16 @@ who5 %>%
 ```
 
 ![](Tidy_Relational_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+```r
+who5 %>% 
+  group_by(country, year, sex) %>% 
+  summarize(cases = sum(cases)) %>% 
+  ggplot(aes(x = year, y = cases, color = sex)) + 
+  geom_point() 
+```
+
+![](Tidy_Relational_files/figure-html/unnamed-chunk-12-2.png)<!-- -->
 
 How to include country? There are so many.
 
