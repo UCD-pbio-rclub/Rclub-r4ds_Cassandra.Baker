@@ -338,8 +338,61 @@ treatment %&gt;%
 ## # ... with 76,036 more rows</code></pre>
 <ol start="3" style="list-style-type: decimal">
 <li><p>The who data documentation specifies that iso2 contains two letter ISO country codes and iso3 containes three letter ISO country codes, which provides the same information as country.</p></li>
-<li></li>
+<li><p>Total TB cases by country</p></li>
 </ol>
+<pre class="r"><code>(who_country &lt;- who5 %&gt;% 
+  group_by(country) %&gt;% 
+  summarize(cases = sum(cases)) %&gt;% 
+  arrange(desc(cases)))</code></pre>
+<pre><code>## # A tibble: 219 × 2
+##                             country   cases
+##                               &lt;chr&gt;   &lt;int&gt;
+## 1                             China 8389839
+## 2                             India 7098552
+## 3                      South Africa 3010272
+## 4                         Indonesia 2909925
+## 5                        Bangladesh 1524034
+## 6                          Viet Nam  965665
+## 7  Democratic Republic of the Congo  960902
+## 8                       Philippines  952828
+## 9                Russian Federation  926236
+## 10                         Pakistan  905629
+## # ... with 209 more rows</code></pre>
+<p>Total TB cases by year</p>
+<pre class="r"><code>(who_year &lt;- who5 %&gt;% 
+  group_by(year) %&gt;% 
+  summarize(cases = sum(cases)))</code></pre>
+<pre><code>## # A tibble: 34 × 2
+##     year cases
+##    &lt;int&gt; &lt;int&gt;
+## 1   1980   959
+## 2   1981   805
+## 3   1982   824
+## 4   1983   786
+## 5   1984   814
+## 6   1985   799
+## 7   1986   754
+## 8   1987   670
+## 9   1988   682
+## 10  1989   654
+## # ... with 24 more rows</code></pre>
+<p>Total TB cases by sex</p>
+<pre class="r"><code>(who_sex &lt;- who5 %&gt;% 
+   group_by(sex) %&gt;% 
+   summarize(cases = sum(cases)))</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##     sex    cases
+##   &lt;chr&gt;    &lt;int&gt;
+## 1     f 15907024
+## 2     m 27490494</code></pre>
+<p>There are typically fewer cases of TB in females than males.</p>
+<pre class="r"><code>who5 %&gt;% 
+  group_by(year, sex) %&gt;% 
+  summarize(cases = sum(cases)) %&gt;% 
+  ggplot(aes(x = year, y = cases, color = sex)) + 
+  geom_point() </code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>How to include country? There are so many.</p>
 </div>
 </div>
 <div id="non-tidy-data" class="section level3">

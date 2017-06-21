@@ -107,13 +107,43 @@ who %>%
   gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
   separate(code, c("new", "var", "sexage")) %>% 
   select(-new, -iso2, -iso3) %>% 
-  separate(sexage, c("sex", "age"), sep = 1) %>% 
-  View()
+  separate(sexage, c("sex", "age"), sep = 1)
 ```
 
 3. The who data documentation specifies that iso2 contains two letter ISO country codes and iso3 containes three letter ISO country codes, which provides the same information as country.
 
-4. 
+4. Total TB cases by country
+```{r}
+(who_country <- who5 %>% 
+  group_by(country) %>% 
+  summarize(cases = sum(cases)) %>% 
+  arrange(desc(cases)))
+```
+
+Total TB cases by year
+```{r}
+(who_year <- who5 %>% 
+  group_by(year) %>% 
+  summarize(cases = sum(cases)))
+```
+
+Total TB cases by sex
+```{r}
+(who_sex <- who5 %>% 
+   group_by(sex) %>% 
+   summarize(cases = sum(cases)))
+```
+
+There are typically fewer cases of TB in females than males.
+```{r}
+who5 %>% 
+  group_by(year, sex) %>% 
+  summarize(cases = sum(cases)) %>% 
+  ggplot(aes(x = year, y = cases, color = sex)) + 
+  geom_point() 
+```
+
+How to include country? There are so many.
 
 ### 12.7 Non-tidy data
 

@@ -298,7 +298,86 @@ who %>%
 
 3. The who data documentation specifies that iso2 contains two letter ISO country codes and iso3 containes three letter ISO country codes, which provides the same information as country.
 
-4. 
+4. Total TB cases by country
+
+```r
+(who_country <- who5 %>% 
+  group_by(country) %>% 
+  summarize(cases = sum(cases)) %>% 
+  arrange(desc(cases)))
+```
+
+```
+## # A tibble: 219 × 2
+##                             country   cases
+##                               <chr>   <int>
+## 1                             China 8389839
+## 2                             India 7098552
+## 3                      South Africa 3010272
+## 4                         Indonesia 2909925
+## 5                        Bangladesh 1524034
+## 6                          Viet Nam  965665
+## 7  Democratic Republic of the Congo  960902
+## 8                       Philippines  952828
+## 9                Russian Federation  926236
+## 10                         Pakistan  905629
+## # ... with 209 more rows
+```
+
+Total TB cases by year
+
+```r
+(who_year <- who5 %>% 
+  group_by(year) %>% 
+  summarize(cases = sum(cases)))
+```
+
+```
+## # A tibble: 34 × 2
+##     year cases
+##    <int> <int>
+## 1   1980   959
+## 2   1981   805
+## 3   1982   824
+## 4   1983   786
+## 5   1984   814
+## 6   1985   799
+## 7   1986   754
+## 8   1987   670
+## 9   1988   682
+## 10  1989   654
+## # ... with 24 more rows
+```
+
+Total TB cases by sex
+
+```r
+(who_sex <- who5 %>% 
+   group_by(sex) %>% 
+   summarize(cases = sum(cases)))
+```
+
+```
+## # A tibble: 2 × 2
+##     sex    cases
+##   <chr>    <int>
+## 1     f 15907024
+## 2     m 27490494
+```
+
+There are typically fewer cases of TB in females than males.
+
+```r
+who5 %>% 
+  group_by(year, sex) %>% 
+  summarize(cases = sum(cases)) %>% 
+  ggplot(aes(x = year, y = cases, color = sex)) + 
+  geom_point() 
+```
+
+![](Tidy_Relational_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
+How to include country? There are so many.
 
 ### 12.7 Non-tidy data
 
