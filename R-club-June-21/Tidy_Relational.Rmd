@@ -1,1 +1,151 @@
+---
+title: "Tidy Data and Relational Data"
+author: "CB"
+date: "Tuesday, June 20, 2017"
+output:
+  html_document:
+    keep_md: yes
+---
+```{r include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, autodep = TRUE)
+library(tidyverse)
+library(nycflights13)
+```
 
+## Chapter 12 Tidy Data
+
+### 12.5 Missing Values
+
+Data can be missing explicitly or implicitly. Even changing the format of a data frame may make implicit missing data explicit.
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+
+stocks %>% 
+  spread(year, return)
+```
+
+`na.rm = TRUE` will remove explicit missing values.
+```{r}
+stocks %>% 
+  spread(year, return) %>% 
+  gather(year, return, `2015`:`2016`, na.rm = TRUE)
+```
+
+`complete()` will insert explicit missing values by column combinations.
+```{r}
+stocks %>% 
+  complete(year, qtr)
+```
+
+A value can be carried down to following missing values with `fill()`. 
+```{r}
+treatment <- tribble(
+  ~ person,           ~ treatment, ~ response,
+  "Derrick Whitmore", 1,           7,
+  NA,                 2,          10, 
+  NA,                 3,           9,
+  "Katherine Burke",  1,           4
+)
+
+treatment %>% 
+  fill(person)
+```
+
+#### 12.5.1 Exercises
+
+1. The `fill` arguments in both `spread()` and `complete()` replace missing values with another specified value. However, `fill` in `spread()` will fill in one specific value for all missing values, while `fill` in `complete()` will fill in missing values differently for each column with values specified by column. 
+
+2. `direction` within `fill()` will specify if a value should be applied to the missing values either above or below it.
+
+### 12.6 Case Study
+
+Tidying the who data one step at a time:
+```{r}
+(who1 <- who %>% 
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE))
+
+who1 %>% 
+  count(key)
+
+(who2 <- who1 %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel")))
+
+(who3 <- who2 %>% 
+  separate(key, c("new", "type", "sexage"), sep = "_"))
+
+who3 %>% count(new)
+
+who4 <- who3 %>% 
+  select(-new, -iso2, -iso3)
+
+(who5 <- who4 %>% 
+  separate(sexage, c("sex", "age"), sep = 1))
+```
+
+Tidying the who data in one pipeline:
+```{r}
+who %>% 
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>% 
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+#### 12.6.1 Exercises
+
+1. Removing missing values from this dataset seems reasonable. Missing values are shown as "NA" and there don't appear to be any implicit missing values. NA indicates that the value is missing while 0 indicates that there were no cases within that category.
+
+2. If you neglect the `mutate()` setp, all of the gathered columns are just removed from the data frame.
+```{r}
+who %>% 
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>% 
+  View()
+```
+
+3. The who data documentation specifies that iso2 contains two letter ISO country codes and iso3 containes three letter ISO country codes, which provides the same information as country.
+
+4. 
+
+### 12.7 Non-tidy data
+
+There may be reasons to use formats other than tidy data, but tidy data should be used whenever possible.
+
+## Chapter 13 Relational Data
+
+### 13.1 Introduction
+
+Relational data are multiple data tables that are related to each other. Relations are analyzed between pairs of data tables.
+
+To work with relational data use:
+
+* mutating joins: add new variables to a data frame using matching observations
+* filtering joins: filter observations from a data frame based on matching observations
+* set operations: treat observations as set elements
+
+### 13.2 nycflights13
+
+Four tibbles are related to the `flights` data frame:
+
+* airlines: carrier names and abbreviations
+* airports: airport information and codes
+* planes: plain information and tail numbers
+* weather: weather per hour for all NYC airports
+
+#### 13.2.1 Exercises
+
+1. You would need the plane identification with `tailnum`, the airports it leaves from and arrives at with `origin` and `dest`, and the locations of those airports with `lat` and `long`. `flights` and `airports` would need to be combined for this.
+
+2. `faa` should connect `origin` with an arrow drawn from `faa` to `origin`.
+
+3. If `weather` included all airports in the USA, it would also define `dest` with `flights`. 
+
+4. You could create a data frame of holidays, when fewer people fly. You may represent this in a data frame with month, day, name, and the organization associated with that holiday. This would connect to `flights` and `weather` with `month` and `day`.
