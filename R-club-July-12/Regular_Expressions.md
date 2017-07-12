@@ -333,3 +333,35 @@ reference captured groups: \0 for entire match, \1 for first group
 
 ### Practice problems
 
+1: ^-?\d+[\.|,]?\d+e?\d+\.?\d*$
+2: ^\d?[\(| ]?(\d{3})[-| |\)]?\d{3}[-| ]?\d{4}$
+3: ^(\w+\.?\w+)\+?\w*@hogwarts\.?\w*.com$
+4: .+<\/(\w+)>$
+5: ^(\w+)\.(jpg|png|gif)$
+6: ^\s*(.+)\s*$
+7: ^.+\b(\w+)\((\w+\.?\w+):(\d+)\)$
+8: ^(\w+)://([\w\-\.]+)(:(\d+))?.+
+
+## Chapter 14
+
+### 14.3 Matching patterns with regular expressions
+
+#### 14.3.5 Grouping and backreferences
+
+```
+str_view(fruit, "(..)\\1", match = TRUE)
+```
+
+##### 14.3.5.1 Exercises
+
+###### 1
+1. This will match strings with a single character that is repeated three times. ex) aaa
+2. This will match strings that have two characters and then an inversion of those two characters. ex) anna
+3. This will match strings with two characters that are repeated. ex)anan
+4. This will match strings with any character that is repeated three times with `.` in between each repetition. ex)a.a.a
+5) This will match strings with any three characters, any number of `.`, and then an inversion of those three characters. ex)abc.cba
+
+###### 2
+1. start and end with the same character: (.).*\1
+2. repeated pair of letters: .*(..).*\1.*
+3. one letter repeated in at least three places: 

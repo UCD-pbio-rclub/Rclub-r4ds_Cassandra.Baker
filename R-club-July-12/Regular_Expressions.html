@@ -261,6 +261,40 @@ str_length(x)</code></pre>
 </div>
 <div id="practice-problems" class="section level3">
 <h3>Practice problems</h3>
+<p>1: ^-?+[.|,]?+e?+.?$ 2: ^?[(| ]?()[-| |)]?[-| ]?$ 3: ^(+.?+)+?<span class="citation">@hogwarts</span>.?.com$ 4: .+&lt;/(+)&gt;$ 5: ^(+).(jpg|png|gif)$ 6: ^(.+)$ 7: ^.+(+)<span class="math inline">\((\w+\.?\w+):(\d+)\)</span>$ 8: ^(+)://([-.]+)(:(+))?.+</p>
+</div>
+</div>
+<div id="chapter-14" class="section level2">
+<h2>Chapter 14</h2>
+<div id="matching-patterns-with-regular-expressions" class="section level3">
+<h3>14.3 Matching patterns with regular expressions</h3>
+<div id="grouping-and-backreferences" class="section level4">
+<h4>14.3.5 Grouping and backreferences</h4>
+<pre><code>str_view(fruit, &quot;(..)\\1&quot;, match = TRUE)</code></pre>
+<div id="exercises-1" class="section level5">
+<h5>14.3.5.1 Exercises</h5>
+<div id="section" class="section level6">
+<h6>1</h6>
+<ol style="list-style-type: decimal">
+<li>This will match strings with a single character that is repeated three times. ex) aaa</li>
+<li>This will match strings that have two characters and then an inversion of those two characters. ex) anna</li>
+<li>This will match strings with two characters that are repeated. ex)anan</li>
+<li>This will match strings with any character that is repeated three times with <code>.</code> in between each repetition. ex)a.a.a</li>
+</ol>
+<ol start="5" style="list-style-type: decimal">
+<li>This will match strings with any three characters, any number of <code>.</code>, and then an inversion of those three characters. ex)abc.cba</li>
+</ol>
+</div>
+<div id="section-1" class="section level6">
+<h6>2</h6>
+<ol style="list-style-type: decimal">
+<li>start and end with the same character: (.).*</li>
+<li>repeated pair of letters: .<em>(..).</em>.*</li>
+<li>one letter repeated in at least three places:</li>
+</ol>
+</div>
+</div>
+</div>
 </div>
 </div>
 
