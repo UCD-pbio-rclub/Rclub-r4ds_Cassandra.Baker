@@ -252,8 +252,16 @@ str_length(x)</code></pre>
 </div>
 </div>
 </div>
-<div id="regexone-tutorial" class="section level2">
-<h2>regexone tutorial</h2>
+<div id="regexone" class="section level2">
+<h2>regexone</h2>
+<div id="tutorial" class="section level3">
+<h3>Tutorial</h3>
+<p>space: ␣ tab: new line: carriage return: any whitespace: any non-whitespace: any digits: any non-digits: letters and digits: non-alphanumeric characters: any number of: * any number of, but at least 1: + optional: ? different possible characters: | any character: . boundary between word and non-word characters: reference captured groups:  for entire match,  for first group</p>
+<p>1: abc 1.5: 123 2: …. 3: [cmf]an 4: [^b]og 5: [A-Z][a-z][a-z] 6: waz{2,5}up 7: a+b*c+ 8: [1-9]+ files? found? 9: [1-9].+abc 10: [A-Za-z]+:[^un]successful$ 11: ^(+).pdf$ 12: ^([A-Z][a-z]{2}())$ 13: ^(?)x(?)$ 14: ^I love (cats|dogs)$ 15: ^.+.$</p>
+</div>
+<div id="practice-problems" class="section level3">
+<h3>Practice problems</h3>
+</div>
 </div>
 
 
@@ -279,7 +287,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
