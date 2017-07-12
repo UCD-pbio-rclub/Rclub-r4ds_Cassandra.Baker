@@ -1,15 +1,7 @@
----
-title: "Strings and Regular Expressions"
-author: "CB"
-date: "Tuesday, July 12, 2017"
-output:
-  html_document:
-    keep_md: yes
----
-```{r include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, autodep = TRUE)
-library(tidyverse)
-```
+# Strings and Regular Expressions
+CB  
+Tuesday, July 12, 2017  
+
 
 ## Chapter 14 Strings
 
@@ -17,13 +9,15 @@ library(tidyverse)
 
 Regular expressions describe patterns in strings.
 
-```{r}
+
+```r
 library(stringr)
 ```
 
 ### 14.2 String basics
 
-```{r}
+
+```r
 string1 <- "This is a string"
 string2 <- 'If I want to include a "quote" inside a string, I use single quotes'
 
@@ -33,10 +27,23 @@ backslash <- "\\"
 ```
 
 The string is different from its printed representation because of escape characters.
-```{r}
+
+```r
 x <- c("\"", "\\")
 x
+```
+
+```
+## [1] "\"" "\\"
+```
+
+```r
 writeLines(x)
+```
+
+```
+## "
+## \
 ```
 
 Special characters
@@ -45,34 +52,69 @@ Special characters
 * `"\t"`: tab
 
 `?"'"` will show all special characters. There are also strings to write non-English characters.
-```{r}
+
+```r
 x <- "\u00b5"
 x
 ```
 
+```
+## [1] "µ"
+```
+
 #### 14.2.1 String length
 
-```{r}
+
+```r
 str_length(c("a", "R for data science", NA))
+```
+
+```
+## [1]  1 18 NA
 ```
 
 #### 14.2.2 Combining strings
 
 Strings can be combined and the separator can be specified.
-```{r}
+
+```r
 str_c("x", "y")
+```
+
+```
+## [1] "xy"
+```
+
+```r
 str_c("x", "y", sep = ", ")
 ```
 
+```
+## [1] "x, y"
+```
+
 `str_replace_na()` can be used to print NA values as "NA". 
-```{r}
+
+```r
 x <- c("abc", NA)
 str_c("|-", x, "-|")
+```
+
+```
+## [1] "|-abc-|" NA
+```
+
+```r
 str_c("|-", str_replace_na(x), "-|")
 ```
 
+```
+## [1] "|-abc-|" "|-NA-|"
+```
+
 Objects of length 0 are dropped.
-```{r}
+
+```r
 name <- "Cassandra"
 time_of_day <- "evening"
 birthday <- FALSE
@@ -84,61 +126,164 @@ str_c(
 )
 ```
 
+```
+## [1] "Good evening Cassandra."
+```
+
 Vectors of strings can be collapsed into single strings.
-```{r}
+
+```r
 str_c(c("x", "y", "z"), collapse = ", ")
+```
+
+```
+## [1] "x, y, z"
 ```
 
 #### 14.2.3 Subsetting strings
 
 Parts of a string can be extracted. 
-```{r}
+
+```r
 x <- c("Apple", "Banana", "Pear")
 str_sub(x, 1, 3)
+```
+
+```
+## [1] "App" "Ban" "Pea"
+```
+
+```r
 str_sub(x, -3, -1)
+```
+
+```
+## [1] "ple" "ana" "ear"
+```
+
+```r
 str_sub("a", 1, 5)
 ```
 
+```
+## [1] "a"
+```
+
 `str_sub()` has an assignment form to modify strings.
-```{r}
+
+```r
 str_sub(x, 1, 1) <- str_to_lower(str_sub(x, 1, 1))
 x
+```
+
+```
+## [1] "apple"  "banana" "pear"
 ```
 
 #### 14.2.4 Locales
 
 Capitalization and sorting are affected by the locale. `str_sort()` and `str_order()` take additional locale arguments for robust analyses. 
 
-```{r}
+
+```r
 str_sort(x, locale = "en")
+```
+
+```
+## [1] "apple"  "banana" "pear"
 ```
 
 #### 14.2.5 Exercises
 
 1. `paste()` uses space as a default separator while `paste0()` does not have a default separator. `paste()` and `paste0()` are equivalent to `str_c()`. `paste()` treats NA like a character whereas `str_c()` gives NA as the output if NA is in the input.
-```{r}
+
+```r
 paste("x", "y", NA)
+```
+
+```
+## [1] "x y NA"
+```
+
+```r
 paste0("x", "y", NA)
+```
+
+```
+## [1] "xyNA"
+```
+
+```r
 str_c("x", "y", NA)
 ```
 
+```
+## [1] NA
+```
+
 2. `sep` is inserted between the arguments of `str_c()` while `collapse` is inserted between elements of a vector within `str_c()`. 
-```{r}
+
+```r
 # separate arguments 
 str_c("x", "y", sep = ":")
+```
+
+```
+## [1] "x:y"
+```
+
+```r
 str_c("x", "y", collapse = ":")
+```
+
+```
+## [1] "xy"
+```
+
+```r
 # vector
 str_c(letters, sep = ":")
+```
+
+```
+##  [1] "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q"
+## [18] "r" "s" "t" "u" "v" "w" "x" "y" "z"
+```
+
+```r
 str_c(letters, collapse = ":")
+```
+
+```
+## [1] "a:b:c:d:e:f:g:h:i:j:k:l:m:n:o:p:q:r:s:t:u:v:w:x:y:z"
+```
+
+```r
 # both
 str_c(1:26, letters, sep = " ", collapse = ", ")
 ```
 
+```
+## [1] "1 a, 2 b, 3 c, 4 d, 5 e, 6 f, 7 g, 8 h, 9 i, 10 j, 11 k, 12 l, 13 m, 14 n, 15 o, 16 p, 17 q, 18 r, 19 s, 20 t, 21 u, 22 v, 23 w, 24 x, 25 y, 26 z"
+```
+
 3. It looks like when an even string is divided by 2, R takes the first of the two middle characters. Maybe you could write an ifelse command to take both middle characters if the string has an even number of characters?
-```{r}
+
+```r
 x <- c("apple", "banana", "pear")
 str_length(x)
+```
+
+```
+## [1] 5 6 4
+```
+
+```r
 str_sub(x, str_length(x)/2, str_length(x)/2)
+```
+
+```
+## [1] "p" "n" "e"
 ```
 
 4. `str_wrap()` wraps strings into a target width per line. This could be used to modify string visualization for printing onto paper or to fit better on a computer screen.
