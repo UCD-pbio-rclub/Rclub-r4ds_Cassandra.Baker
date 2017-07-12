@@ -203,7 +203,7 @@ reference captured groups: \0 for entire match, \1 for first group
 
 #### 14.3.5 Grouping and backreferences
 
-```
+```{r}
 str_view(fruit, "(..)\\1", match = TRUE)
 ```
 
@@ -211,12 +211,32 @@ str_view(fruit, "(..)\\1", match = TRUE)
 
 ###### 1
 1. This will match strings with a single character that is repeated three times. ex) aaa
+```{r}
+str_view(c("abc", "aaa", "bbb"), "(.)\\1\\1", match = TRUE)
+```
+
 2. This will match strings that have two characters and then an inversion of those two characters. ex) anna
+```{r}
+str_view(c("bob", "anna", "paul"), "(.)(.)\\2\\1", match = TRUE)
+```
+
 3. This will match strings with two characters that are repeated. ex)anan
+```{r}
+str_view(c("banana", "apple", "pear"), "(..)\\1", match = TRUE)
+```
+
 4. This will match strings with any character that is repeated three times with `.` in between each repetition. ex)a.a.a
+```{r}
+str_view(c("a.a.a", "2.2.2", "5.4.3"), "(.).\\1.\\1", match = TRUE)
+```
+
 5) This will match strings with any three characters, any number of `.`, and then an inversion of those three characters. ex)abc.cba
+```{r}
+str_view(c("abc..cba", "123.321", "153351", "123123"), "(.)(.)(.).*\\3\\2\\1", match = TRUE)
+```
+
 
 ###### 2
 1. start and end with the same character: (.).*\1
 2. repeated pair of letters: .*(..).*\1.*
-3. one letter repeated in at least three places: 
+3. one letter repeated in at least three places: (.*(.).*){3,}

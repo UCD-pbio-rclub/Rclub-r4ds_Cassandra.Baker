@@ -348,20 +348,64 @@ reference captured groups: \0 for entire match, \1 for first group
 
 #### 14.3.5 Grouping and backreferences
 
-```
+
+```r
 str_view(fruit, "(..)\\1", match = TRUE)
 ```
+
+<!--html_preserve--><div id="htmlwidget-ceab1cb773e59a8f10da" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ceab1cb773e59a8f10da">{"x":{"html":"<ul>\n  <li>b<span class='match'>anan<\/span>a<\/li>\n  <li><span class='match'>coco<\/span>nut<\/li>\n  <li><span class='match'>cucu<\/span>mber<\/li>\n  <li><span class='match'>juju<\/span>be<\/li>\n  <li><span class='match'>papa<\/span>ya<\/li>\n  <li>s<span class='match'>alal<\/span> berry<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
 
 ##### 14.3.5.1 Exercises
 
 ###### 1
 1. This will match strings with a single character that is repeated three times. ex) aaa
+
+```r
+str_view(c("abc", "aaa", "bbb"), "(.)\\1\\1", match = TRUE)
+```
+
+<!--html_preserve--><div id="htmlwidget-e4e93808b4a1a3fc859b" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e4e93808b4a1a3fc859b">{"x":{"html":"<ul>\n  <li><span class='match'>aaa<\/span><\/li>\n  <li><span class='match'>bbb<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
 2. This will match strings that have two characters and then an inversion of those two characters. ex) anna
+
+```r
+str_view(c("bob", "anna", "paul"), "(.)(.)\\2\\1", match = TRUE)
+```
+
+<!--html_preserve--><div id="htmlwidget-da615fcd9260d861bbec" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-da615fcd9260d861bbec">{"x":{"html":"<ul>\n  <li><span class='match'>anna<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
 3. This will match strings with two characters that are repeated. ex)anan
+
+```r
+str_view(c("banana", "apple", "pear"), "(..)\\1", match = TRUE)
+```
+
+<!--html_preserve--><div id="htmlwidget-54a7bf440344dde09670" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-54a7bf440344dde09670">{"x":{"html":"<ul>\n  <li>b<span class='match'>anan<\/span>a<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
 4. This will match strings with any character that is repeated three times with `.` in between each repetition. ex)a.a.a
+
+```r
+str_view(c("a.a.a", "2.2.2", "5.4.3"), "(.).\\1.\\1", match = TRUE)
+```
+
+<!--html_preserve--><div id="htmlwidget-8c91fe67f4b4976d6d02" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8c91fe67f4b4976d6d02">{"x":{"html":"<ul>\n  <li><span class='match'>a.a.a<\/span><\/li>\n  <li><span class='match'>2.2.2<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
 5) This will match strings with any three characters, any number of `.`, and then an inversion of those three characters. ex)abc.cba
+
+```r
+str_view(c("abc..cba", "123.321", "153351", "123123"), "(.)(.)(.).*\\3\\2\\1", match = TRUE)
+```
+
+<!--html_preserve--><div id="htmlwidget-eb25f45de71ce07e5917" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-eb25f45de71ce07e5917">{"x":{"html":"<ul>\n  <li><span class='match'>abc..cba<\/span><\/li>\n  <li><span class='match'>123.321<\/span><\/li>\n  <li><span class='match'>153351<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script><!--/html_preserve-->
+
 
 ###### 2
 1. start and end with the same character: (.).*\1
 2. repeated pair of letters: .*(..).*\1.*
-3. one letter repeated in at least three places: 
+3. one letter repeated in at least three places: (.*(.).*){3,}
