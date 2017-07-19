@@ -91,12 +91,14 @@ identical(single, multiple)
 2. all words that start with a vowel and end with a consonant
 ```{r}
 # single regular expression
-(single <- str_subset(words, "^[aeiou].*[^aeiou]$"))
+single <- str_subset(words, "^[aeiou].*[^aeiou]$")
+head(single)
 
 # multiple str_detect() calls
 vowel_start <- str_detect(words, "^[aeiou]")
 consonant_end <- str_detect(words, "[^aeiou]$")
-(multiple <- words[vowel_start & consonant_end])
+multiple <- words[vowel_start & consonant_end]
+head(multiple)
 
 identical(single, multiple)
 ```
@@ -165,3 +167,112 @@ df %>%
 ```
 
 #### 14.4.3 Extract matches
+
+`str_extract()` will extract matched text, but only the first match.
+```{r}
+colors <- c("red", "orange", "yellow", "green", "blue", "purple")
+(color_match <- str_c(colors, collapse = "|"))
+has_color <- str_subset(sentences, color_match)
+matches <- str_extract(has_color, color_match)
+head(matches)
+```
+
+Use `str_extract_all()` to extract all matches.
+```{r}
+more <- sentences[str_count(sentences, color_match) > 1]
+str_view_all(more, color_match)
+str_extract_all(more, color_match)
+```
+
+`simplify = TRUE` will return a matrix instead of a list.
+```{r}
+x <- c("a", "a b", "a b c")
+str_extract_all(x, "[a-z]", simplify = TRUE)
+```
+
+##### 14.4.3.1 Exercises
+
+###### 1 
+
+Only match colors and not colors within other words.
+```{r}
+color_match <- "\\b(red|orange|yellow|green|blue|purple)\\b"
+
+more <- sentences[str_count(sentences, color_match) > 1]
+str_view_all(more, color_match)
+```
+
+###### 2
+
+1. Extract the first word from each sentence
+```{r}
+str_extract(sentences, "^\\w+") %>% head()
+```
+
+2. Extract all words ending in `ing`
+```{r}
+ing_words <- "\\w+ing\\b"
+has_ing <- str_subset(sentences, ing_words)
+str_extract_all(has_ing, ing_words) %>% head()
+```
+
+3. Extract all plurals
+```{r}
+plurals <- "\\w{2,}[b-hj-np-rtv-z]s\\b"
+has_plurals <- str_subset(sentences, plurals)
+str_extract_all(has_plurals, plurals) %>% head()
+```
+
+#### 14.4.4 Grouped matches
+
+Extract nouns from sentences.
+```{r}
+noun <- "(a|the) ([^ ]+)"
+
+has_noun <- sentences %>% 
+  str_subset(noun) %>% 
+  head(10)
+
+has_noun %>% 
+  str_extract(noun)
+```
+
+`str_match()` splits matches into groups.
+```{r}
+has_noun %>% 
+  str_match(noun)
+```
+
+`tidyr::extract()` is easier to use with tibbles.
+```{r}
+tibble(sentence = sentences) %>% 
+  tidyr::extract(
+    sentence, c("article", "noun"), "(a|the) ([^ ]+)",
+    remove = FALSE
+  )
+```
+
+##### 14.4.4.1 Exercises
+
+1. Pull out numbers and the words that come after them.
+```{r}
+number_word <- "\\b(one|two|three|four|five|six|seven|eight|nine|ten) (\\w+)"
+has_nw <- sentences %>% 
+  str_subset(number_word)
+has_nw %>% 
+  str_match_all(number_word) %>% 
+  head()
+```
+
+2. Find all contractions and separate the parts around the apostrophe.
+```{r}
+contraction <- "([A-Za-z]+)'([a-z]+)"
+has_con <- sentences %>% 
+  str_subset(contraction)
+has_con %>% 
+  str_match_all(contraction) %>% 
+  head()
+```
+
+#### 14.4.5 Replacing matches
+
