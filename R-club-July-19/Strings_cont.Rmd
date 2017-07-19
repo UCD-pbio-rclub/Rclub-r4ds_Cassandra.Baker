@@ -1,1 +1,167 @@
+---
+title: "Strings and Regular Expressions cont."
+author: "CB"
+date: "Tuesday, July 18, 2017"
+output:
+  html_document:
+    keep_md: yes
+---
+```{r include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, autodep = TRUE)
+library(tidyverse)
+library(stringr)
+```
 
+## Chapter 14 Strings
+
+### 14.4 Tools
+
+#### 14.4.1 Detect matches
+
+`str_detect()` can find matches within character vectors.
+```{r}
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+```
+
+Logical vectors are useful for counting matches.
+```{r}
+sum(str_detect(words, "^t"))
+mean(str_detect(words, "[aeiou]$"))
+```
+
+Regular expressions can be broken up into smaller pieces to make them easier to work with and understand rather than using one long and complex regular expression.
+
+`str_detect()` within a subsetting function works the same as `str_subset()`.
+```{r}
+words[str_detect(words, "x$")]
+str_subset(words, "x$")
+```
+
+`str_detect()` can also be used in conjunction with `filter()`.
+```{r}
+df <- tibble(
+  word = words,
+  i = seq_along(word)
+)
+df %>% 
+  filter(str_detect(words, "x$"))
+```
+
+`str_count()` is like `str_detect()` but counts the number of matches within the string.
+```{r}
+x <- c("apple", "banana", "pear")
+str_count(x, "a")
+```
+
+`str_count()` can be used with `mutate()`. 
+```{r}
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]"),
+    consonants = str_count(word, "[^aeiou]")
+  )
+```
+
+String matches don't overlap.
+```{r}
+str_count("abababa", "aba")
+str_view_all("abababa", "aba")
+```
+
+Many stringr functions are paired so that one function works with one match and the other function works with all matches.
+
+#### 14.4.2 Exercises
+
+##### 1
+
+1. all words that start or end with `x`
+```{r}
+# single regular expression
+(single <- str_subset(words, "^x|x$"))
+
+# multiple str_detect() calls
+x_start <- str_detect(words, "^x")
+x_end <- str_detect(words, "x$")
+(multiple <- words[x_start | x_end])
+
+identical(single, multiple)
+```
+
+2. all words that start with a vowel and end with a consonant
+```{r}
+# single regular expression
+(single <- str_subset(words, "^[aeiou].*[^aeiou]$"))
+
+# multiple str_detect() calls
+vowel_start <- str_detect(words, "^[aeiou]")
+consonant_end <- str_detect(words, "[^aeiou]$")
+(multiple <- words[vowel_start & consonant_end])
+
+identical(single, multiple)
+```
+
+3. words that contain at least one of each vowel
+```{r}
+# single regular expression (from stackoverflow)
+vowels <- "^(?=.*a)(?=.*e)(?=.*i)(?=.*o)(?=.*u).*$"
+(single <-  str_subset(words, vowels))
+
+# multiple str_detect() calls
+a <- str_detect(words, "a")
+e <- str_detect(words, "e")
+i <- str_detect(words, "i")
+o <- str_detect(words, "o")
+u <- str_detect(words, "u")
+(multiple <- words[a & e & i & o & u])
+
+identical(single, multiple)
+
+# did they work?
+test <- c("easiloud", "aeiou", "around")
+str_subset(test, vowels)
+
+a_test <- str_detect(test, "a")
+e_test <- str_detect(test, "e")
+i_test <- str_detect(test, "i")
+o_test <- str_detect(test, "o")
+u_test <- str_detect(test, "u")
+test[a_test & e_test & i_test & o_test & u_test]
+```
+
+##### 2
+
+What word has the highest number of vowels?
+```{r}
+df <- tibble(
+  word = words
+)
+
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]")
+  ) %>% 
+  arrange(desc(vowels)) %>% 
+  head()
+
+# all words with 5 (most) vowels
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]")
+  ) %>% 
+  arrange(desc(vowels)) %>% 
+  filter(vowels == 5)
+```
+
+What word has the highest proportion of vowels? 
+```{r}
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]"),
+    vowel_proportion = vowels/str_length(word)
+  ) %>% 
+  arrange(desc(vowel_proportion)) %>% 
+  head()
+```
+
+#### 14.4.3 Extract matches
