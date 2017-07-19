@@ -276,3 +276,94 @@ has_con %>%
 
 #### 14.4.5 Replacing matches
 
+`str_replace()` will replace matches with something new.
+```{r}
+x <- c("apple", "pear", "banana")
+str_replace(x, "[aeiou]", "-")
+str_replace_all(x, "[aeiou]", "-")
+
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+```
+
+Backreferences can also be used for replacements.
+```{r}
+sentences %>% 
+  str_replace("([^ ]+) ([^ ]+) ([^ ]+)", "\\1 \\3 \\2") %>% 
+  head(3)
+```
+
+##### 14.4.5.1 Exercises
+
+1. Replace forward slashes with backslashes
+```{r}
+x <- c("rat/mouse", "cat/dog", "bird/bat")
+str_replace(x, "/", "\\")
+str_replace(x, "/", "\\\\")
+# can't get just one backslash as a replacement
+```
+
+2. Use `replace_all()` for `str_to_lower()`
+```{r}
+# not sure how to translate to the correct lowercase character
+#sentences %>% 
+ # str_replace_all("([A-Z])", "") %>% 
+  #head()
+```
+
+3.  Switch first and last letter in `words`
+```{r}
+head(words)
+str_replace(words, "^(\\w)(\\w*)(\\w)$", "\\3\\2\\1") %>% 
+  head()
+```
+WOrds with the same first and last letter would still be words.
+
+#### 14.4.6 Splitting
+
+`str_split()` will split strings into pices. 
+```{r}
+sentences %>% 
+  head(3) %>% 
+  str_split(" ")
+
+x <- "This is a sentence. This is another sentence."
+str_view_all(x, boundary("word"))
+```
+
+##### 14.4.6.1 Exercises
+
+1. Split a string into individual components
+```{r}
+x <- "apples, pears, and bananas"
+str_split(x, boundary("word"))
+```
+
+2. Splitting by `boundary("word")` will remove punctuation when separating words, while splitting by `" "` includes the punctuation with the words they are next to.
+
+3. Splitting with an empty string splits on each character. 
+```{r}
+str_split(x, "")
+```
+
+#### 14.4.7 Find matches
+
+`str_locate()` gives the positions of each match, which is useful for dealing with situations where other functions aren't working well.
+
+### 14.5 Other types of pattern
+
+`regexp()` parameters can control pattern matching.
+
+`fixed()` matches exactly what is specified on a byte level. This may be faster than `regexp()` for simple matches.
+`coll()` matches strings with collation rules and uses `locale` to compare characters. This is slower than `regexp()` and `fixed()`. 
+
+#### 14.5.1 Exercises
+
+1. To find all strings containing `\` with `regex()`, you would need to escape the backslash and make sure it is being recognized as a literal backslash. This would be easier to find with `fixed()` because it could recognize `\` without the need for escaping the special character.
+
+2. Five most common words in `sentences`
+```{r}
+words <- str_split(sentences, boundary("word"), simplify = TRUE)
+# how to match all words that are the same and then count?
+```
+
